@@ -64,14 +64,14 @@ defmodule Craftplan.ProductionBatchingTest do
     order1 =
       Factory.create_order_with_items!(
         customer,
-        [%{product_id: product.id, quantity: D.new("10"), unit_price: D.new("12.00")}],
+        [%{product_id: product.id, quantity: D.new("10"), unit_price: Money.new("12.00", :USD)}],
         actor: actor
       )
 
     order2 =
       Factory.create_order_with_items!(
         customer,
-        [%{product_id: product.id, quantity: D.new("5"), unit_price: D.new("12.00")}],
+        [%{product_id: product.id, quantity: D.new("5"), unit_price: Money.new("12.00", :USD)}],
         actor: actor
       )
 

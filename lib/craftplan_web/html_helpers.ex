@@ -260,7 +260,7 @@ defmodule CraftplanWeb.HtmlHelpers do
     end
   end
 
-  def format_currency(_currency, {:ok, data} = money, opts) do
+  def format_currency(_currency, {:ok, data} = _money, opts) do
     if Keyword.get(opts, :format) == :string do
       Money.to_string!(data, opts)
     else

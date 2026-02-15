@@ -12,7 +12,7 @@ defmodule Craftplan.Catalog.Product.Calculations.MarkupPercentage do
   def load(_query, _opts, _context), do: [:bom_unit_cost]
 
   @impl true
-  def calculate(records, opts, _context) do
+  def calculate(records, _opts, _context) do
     currency = Craftplan.Settings.get_settings!().currency
 
     Enum.map(records, fn record ->

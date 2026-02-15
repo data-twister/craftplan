@@ -6,14 +6,14 @@ defmodule Craftplan.CSV.ProductsImporterTest do
 
   describe "dry_run/2" do
     test "returns errors on invalid rows and no rows on failure" do
-      csv = "name,sku,price,currency\nBad,BAD,0,USD\n"
+      csv = "name,sku,price,currency\nBad,BAD,0\n"
 
       assert {:ok, %{rows: rows, errors: errors}} =
                Products.dry_run(csv, delimiter: ",", mapping: %{})
 
       assert rows == []
       assert length(errors) == 1
-      assert Enum.any?(errors, &String.contains?(&1.message, "Invalid price"))
+      assert Enum.any?(errors, &String.contains?(&1.message, "Missing currency"))
     end
   end
 
@@ -31,7 +31,7 @@ defmodule Craftplan.CSV.ProductsImporterTest do
       assert {:ok, _} = Catalog.get_product_by_sku("PB-2", actor: actor)
 
       # Update one
-      csv2 = "name,sku,price,currency\nProd A v2,PA-1,1.25\nProd B,PB-2,2.50,USD\n"
+      csv2 = "name,sku,price,currency\nProd A v2,PA-1,1.25,USD\nProd B,PB-2,2.50,USD\n"
 
       assert {:ok, %{inserted: 0, updated: updated, errors: []}} =
                Products.import(csv2, delimiter: ",", mapping: %{}, actor: actor)

@@ -32,7 +32,7 @@ defmodule Craftplan.Catalog.Services.BatchCostCalculator do
   defp do_calculate(%BOM{} = bom, quantity, opts, settings, path) do
     authorize? = Keyword.get(opts, :authorize?, true)
     actor = Keyword.get(opts, :actor)
-    currency = Settings.get_settings!().currency
+    currency = Keyword.get(opts, :currency, :USD)
 
     bom =
       Ash.load!(
@@ -79,7 +79,7 @@ defmodule Craftplan.Catalog.Services.BatchCostCalculator do
 
   @spec component_cost(BOMComponent.t(), D.t(), keyword(), map(), MapSet.t()) :: D.t()
   defp component_cost(%BOMComponent{component_type: :material} = component, quantity, opts, _settings, _path) do
-    currency = Settings.get_settings!().currency
+    currency = Keyword.get(opts, :currency, :USD)
     multiplier = waste_multiplier(component)
 
     total_quantity =
@@ -145,7 +145,7 @@ defmodule Craftplan.Catalog.Services.BatchCostCalculator do
 
   @spec calculate_nested_cost(BOM.t(), keyword(), map(), MapSet.t()) :: D.t()
   defp calculate_nested_cost(bom, opts, settings, path) do
-    currency = Settings.get_settings!().currency
+    currency = Keyword.get(opts, :currency, :USD)
 
     nested =
       do_calculate(
@@ -201,7 +201,7 @@ defmodule Craftplan.Catalog.Services.BatchCostCalculator do
   defp fetch_settings(opts) do
     authorize? = Keyword.get(opts, :authorize?, true)
     actor = Keyword.get(opts, :actor)
-    currency = Settings.get_settings!().currency
+    currency = Keyword.get(opts, :currency, :USD)
 
     case Settings.get_settings(actor: actor, authorize?: authorize?) do
       {:ok, nil} ->

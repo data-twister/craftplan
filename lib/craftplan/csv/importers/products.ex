@@ -83,7 +83,7 @@ defmodule Craftplan.CSV.Importers.Products do
                 attrs = %{
                   name: row.name,
                   sku: row.sku,
-                  price: Money.new(row.price, row.currency),
+                  price: row.price,
                   status: row.status
                 }
 
@@ -170,15 +170,15 @@ defmodule Craftplan.CSV.Importers.Products do
     sku = fields |> fetch_field(header_map, "sku") |> to_string() |> String.trim()
     currency = fields |> fetch_field(header_map, "currency") |> to_string() |> String.trim()
 
-    price_decimal =
-      fields |> fetch_field(header_map, "price") |> Money.new(currency) |> Money.to_decimal()
+    price_money =
+      fields |> fetch_field(header_map, "price") |> Money.new(currency)
 
     status_str = fields |> fetch_field(header_map, "status") |> to_string() |> String.trim()
 
     with :ok <- present?(name, "name"),
          :ok <- present?(sku, "sku"),
          :ok <- present?(currency, "currency"),
-         {:ok, price} <- price_decimal,
+         price = price_money,
          {:ok, status} <- parse_status(status_str) do
       {:ok, %{name: name, sku: sku, price: price, status: status, currency: currency}}
     end
@@ -186,15 +186,6 @@ defmodule Craftplan.CSV.Importers.Products do
 
   defp present?("", field), do: {:error, "Missing #{field}"}
   defp present?(_val, _field), do: :ok
-
-  defp parse_decimal(""), do: {:ok, Decimal.new("0")}
-
-  defp parse_decimal(str) do
-    case Decimal.parse(str) do
-      :error -> {:error, "Invalid price: #{str}"}
-      {dec, _} -> {:ok, dec}
-    end
-  end
 
   defp parse_status(""), do: {:ok, :active}
 

@@ -59,13 +59,14 @@ defmodule Craftplan.Orders.Order do
         :payment_method,
         :discount_type,
         :discount_value,
-        :delivery_method
+        :delivery_method,
+        :currency
       ]
 
       argument :items, {:array, :map}
 
       change manage_relationship(:items, type: :direct_control)
-      change {CalculateTotals, []}
+      change {CalculateTotals, [currency: :USD]}
       change {ValidateConstraints, []}
     end
 
@@ -85,13 +86,14 @@ defmodule Craftplan.Orders.Order do
         :delivery_method,
         :tax_total,
         :shipping_total,
-        :discount_total
+        :discount_total,
+        :currency
       ]
 
       argument :items, {:array, :map}
 
       change manage_relationship(:items, type: :direct_control)
-      change {CalculateTotals, []}
+      change {CalculateTotals, [currency: :USD]}
       change {ValidateConstraints, []}
     end
 

@@ -32,7 +32,8 @@ defmodule Craftplan.Orders.TotalsUpdateAfterItemsTest do
       Orders.Order
       |> Ash.Changeset.for_create(:create, %{
         customer_id: customer.id,
-        delivery_date: DateTime.utc_now()
+        delivery_date: DateTime.utc_now(),
+        currency: :USD
       })
       |> Ash.create(actor: staff)
 

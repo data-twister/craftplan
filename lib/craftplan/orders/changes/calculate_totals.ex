@@ -14,10 +14,11 @@ defmodule Craftplan.Orders.Changes.CalculateTotals do
   alias Craftplan.DecimalHelpers
 
   @impl true
-  def change(changeset, _opts, _context) do
+  def change(changeset, opts, _context) do
     import Ash.Changeset
 
-    currency = Craftplan.Settings.get_settings!().currency
+    #    currency = Craftplan.Settings.get_settings!().currency
+    currency = opts[:currency]
     items_arg = get_argument(changeset, :items)
 
     {subtotal, changeset} =

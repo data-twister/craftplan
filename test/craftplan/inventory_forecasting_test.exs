@@ -61,7 +61,8 @@ defmodule Craftplan.InventoryForecastingTest do
     |> Ash.Changeset.for_create(:create, %{
       customer_id: customer.id,
       delivery_date: dt,
-      items: [%{"product_id" => product.id, "quantity" => qty, "unit_price" => product.price}]
+      items: [%{"product_id" => product.id, "quantity" => qty, "unit_price" => product.price}],
+      currency: :USD
     })
     |> Ash.create!(actor: Craftplan.DataCase.staff_actor())
   end

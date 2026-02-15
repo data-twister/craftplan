@@ -11,7 +11,7 @@ defmodule Craftplan.Catalog.Product.Calculations.MaterialCost do
   def load(_query, _opts, _context), do: [active_bom: [rollup: [:material_cost]]]
 
   @impl true
-  def calculate(records, opts, _context) do
+  def calculate(records, _opts, _context) do
     currency = Craftplan.Settings.get_settings!().currency
     Enum.map(records, &material_cost(&1, currency))
   end

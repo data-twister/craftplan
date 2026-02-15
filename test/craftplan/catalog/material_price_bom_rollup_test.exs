@@ -52,7 +52,7 @@ defmodule Craftplan.Catalog.MaterialPriceBomRollupTest do
 
       # Verify initial rollup cost is $100 (100 units * $1.00)
       rollup = get_rollup_for_product(product.id, staff)
-      assert Decimal.equal?(rollup.material_cost, Decimal.new("100.00"))
+      assert Money.equal?(rollup.material_cost, Money.new("100.00", :USD))
 
       # Update material price to $2.00
       _updated_material =
@@ -62,7 +62,7 @@ defmodule Craftplan.Catalog.MaterialPriceBomRollupTest do
 
       # Verify rollup cost is now $200 (100 units * $2.00)
       updated_rollup = get_rollup_for_product(product.id, staff)
-      assert Decimal.equal?(updated_rollup.material_cost, Decimal.new("200.00"))
+      assert Money.equal?(updated_rollup.material_cost, Money.new("200.00", :USD))
     end
 
     test "non-price change does not trigger rollup refresh" do
@@ -173,8 +173,8 @@ defmodule Craftplan.Catalog.MaterialPriceBomRollupTest do
       # Verify initial costs
       rollup1 = get_rollup_for_product(product1.id, staff)
       rollup2 = get_rollup_for_product(product2.id, staff)
-      assert Money.equal?(rollup1.material_cost, Money.new("10.00"))
-      assert Money.equal?(rollup2.material_cost, Money.new("20.00"))
+      assert Money.equal?(rollup1.material_cost, Money.new("10.00", :USD))
+      assert Money.equal?(rollup2.material_cost, Money.new("20.00", :USD))
 
       # Update material price
       _updated_material =
@@ -185,8 +185,8 @@ defmodule Craftplan.Catalog.MaterialPriceBomRollupTest do
       # Both rollups should be updated
       updated_rollup1 = get_rollup_for_product(product1.id, staff)
       updated_rollup2 = get_rollup_for_product(product2.id, staff)
-      assert Money.equal?(updated_rollup1.material_cost, Money.new("30.00"))
-      assert Money.equal?(updated_rollup2.material_cost, Money.new("60.00"))
+      assert Money.equal?(updated_rollup1.material_cost, Money.new("30.00", :USD))
+      assert Money.equal?(updated_rollup2.material_cost, Money.new("60.00", :USD))
     end
 
     test "material not used in any BOM handles gracefully" do

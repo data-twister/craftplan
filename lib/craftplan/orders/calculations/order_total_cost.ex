@@ -12,7 +12,7 @@ defmodule Craftplan.Orders.OrderTotalCost do
   end
 
   @impl true
-  def load(_query, opts, _context), do: [items: [:unit_price, :quantity]]
+  def load(_query, _opts, _context), do: [items: [:unit_price, :quantity]]
 
   @impl true
   def calculate(records, opts, _context) do
