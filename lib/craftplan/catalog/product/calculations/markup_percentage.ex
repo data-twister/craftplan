@@ -16,20 +16,23 @@ defmodule Craftplan.Catalog.Product.Calculations.MarkupPercentage do
     currency = Craftplan.Settings.get_settings!().currency
 
     Enum.map(records, fn record ->
-      case record.bom_unit_cost do
-        %NotLoaded{} ->
-          Decimal.new(0)
+      case_result =
+        case record.bom_unit_cost do
+          %NotLoaded{} ->
+            Money.new(0, currency)
 
-        nil ->
-          Decimal.new(0)
+          nil ->
+            Money.new(0, currency)
 
-        unit_cost ->
-          if Money.compare(unit_cost, Money.new!(0, currency)) == :eq do
-            Decimal.new(0)
-          else
-            Money.to_decimal(Money.div!(Money.sub!(record.price, unit_cost), Money.to_decimal(unit_cost)))
-          end
-      end
+          unit_cost ->
+            if Money.compare(unit_cost, Money.new!(0, currency)) == :eq do
+              Money.new(0, currency)
+            else
+              Money.div!(Money.sub!(record.price, unit_cost), Money.to_decimal(unit_cost))
+            end
+        end
+
+      Money.to_decimal(case_result)
     end)
   end
 end

@@ -1,4 +1,4 @@
-defmodule Craftplan.Orders.OrderTotal.Cost do
+defmodule Craftplan.Orders.OrderTotalCost do
   @moduledoc false
   use Ash.Resource.Calculation
 
@@ -12,12 +12,11 @@ defmodule Craftplan.Orders.OrderTotal.Cost do
   end
 
   @impl true
-  def load(_query, opts, _context), do: opts[:keys] ++ [items: [:unit_price, :quantity]]
+  def load(_query, opts, _context), do: [items: [:unit_price, :quantity]]
 
   @impl true
-  def calculate(records, _opts, _context) do
-    currency = Craftplan.Settings.get_settings!().currency
-
+  def calculate(records, opts, _context) do
+    currency = Keyword.get(opts, :currency, :USD)
     Enum.map(records, &cost(&1, currency))
   end
 

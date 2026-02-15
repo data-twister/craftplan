@@ -353,12 +353,11 @@ defmodule Craftplan.Orders.Order do
   calculations do
     calculate :total_cost_by_currency,
               AshMoney.Types.Money,
-              {Craftplan.Orders.OrderTotal.Cost, keys: [:currency]}
+              {OrderTotalCost, keys: [:currency]}
   end
 
   aggregates do
     count :total_items, :items
-
     sum :total_cost, :items, :cost
   end
 
