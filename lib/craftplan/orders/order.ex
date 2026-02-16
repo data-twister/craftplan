@@ -51,7 +51,7 @@ defmodule Craftplan.Orders.Order do
       end
     end
 
-    domain Craftplan.Orders.Order
+    domain Craftplan.System
   end
 
   actions do
@@ -236,6 +236,13 @@ defmodule Craftplan.Orders.Order do
       change set_attribute(:discount_total, discount_total)
       total = Money.to_currency(arg(:total), arg(:currency))
       change set_attribute(:total, total)
+    end
+
+    update :oban do
+      accept []
+      argument :currency, :string
+
+      change set_attribute(:currency, arg(:currency))
 
       change run_oban_trigger(:process)
     end

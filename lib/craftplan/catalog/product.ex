@@ -50,7 +50,7 @@ defmodule Craftplan.Catalog.Product do
       end
     end
 
-    domain Craftplan.Catalog.Product
+    domain Craftplan.System
   end
 
   actions do
@@ -120,7 +120,12 @@ defmodule Craftplan.Catalog.Product do
 
       price = Money.to_currency(arg(:price), arg(:currency))
       change set_attribute(:price, price)
+    end
 
+    update :oban do
+      accept []
+      argument :currency, :string
+      change set_attribute(:currency, arg(:currency))
       change run_oban_trigger(:process)
     end
   end

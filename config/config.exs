@@ -39,6 +39,18 @@ config :craftplan, CraftplanWeb.Endpoint,
   pubsub_server: Craftplan.PubSub,
   live_view: [signing_salt: "vNk6HzXn"]
 
+config :craftplan, Oban,
+  engine: Oban.Engines.Basic,
+  repo: Craftplan.Repo,
+  plugins: [
+    Oban.Plugins.Pruner,
+    {Oban.Plugins.Cron,
+     crontab: [
+       # {"0 * * * *", Framework.Workers.Hourly}
+     ]}
+  ],
+  queues: [default: 10, system_process: 10]
+
 config :craftplan,
   ecto_repos: [Craftplan.Repo],
   generators: [timestamp_type: :utc_datetime],

@@ -5,7 +5,7 @@ defmodule Craftplan.Settings.Settings do
     domain: Craftplan.Settings,
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer],
-    extensions: [AshJsonApi.Resource]
+    extensions: [AshJsonApi.Resource, AshOban]
 
   alias Craftplan.Types.EncryptedBinary
 
@@ -24,10 +24,21 @@ defmodule Craftplan.Settings.Settings do
     repo Craftplan.Repo
   end
 
+  oban do
+    triggers do
+      trigger :process do
+        action :change_currency
+        worker_read_action(:read)
+      end
+    end
+
+    domain Craftplan.System
+  end
+
   actions do
     default_accept :*
 
-    defaults [:read, :update]
+    defaults [:read]
 
     create :init do
       accept []
@@ -37,7 +48,30 @@ defmodule Craftplan.Settings.Settings do
       get? true
     end
 
-    update :currency do
+    update :update do
+      accept [
+        :currency,
+        :shipping_flat,
+        :labor_hourly_rate,
+        :tax_mode,
+        :tax_rate,
+        :offers_pickup,
+        :offers_delivery,
+        :lead_time_days,
+        :daily_capacity,
+        :labor_overhead_percent,
+        :retail_markup_value,
+        :retail_markup_value,
+        :wholesale_markup_mode,
+        :wholesale_markup_value
+      ]
+
+      argument :currency, :string, default: "EUR"
+      change set_attribute(:currency, arg(:currency))
+      change run_oban_trigger(:process)
+    end
+
+    update :change_currency do
       require_atomic? false
 
       accept []
@@ -52,10 +86,15 @@ defmodule Craftplan.Settings.Settings do
       change set_attribute(:currency, arg(:currency))
       change set_attribute(:shipping_flat, shipping_flat)
       change set_attribute(:labor_hourly_rate, labor_hourly_rate)
+      change {Craftplan.Settings.Settings.AssignCurrency, [currency: arg(:currency)]}
     end
   end
 
   policies do
+    bypass AshOban.Checks.AshObanInteraction do
+      authorize_if always()
+    end
+
     # API key scope check
     policy always() do
       authorize_if {Craftplan.Accounts.Checks.ApiScopeCheck, []}

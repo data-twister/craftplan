@@ -49,7 +49,7 @@ defmodule Craftplan.Inventory.Material do
       end
     end
 
-    domain Craftplan.Inventory.Material
+    domain Craftplan.System
   end
 
   actions do
@@ -103,9 +103,23 @@ defmodule Craftplan.Inventory.Material do
 
       argument :currency, :string
       argument :price, AshMoney.Types.Money
+      argument :subtotal, AshMoney.Types.Money
+      argument :total, AshMoney.Types.Money
 
       price = Money.to_currency(arg(:price), arg(:currency))
       change set_attribute(:price, price)
+
+      change set_attribute(:subtotal, arg(:subtotal))
+      change set_attribute(:total, arg(:total))
+
+    end
+
+    update :oban do
+      accept []
+      argument :currency, :string
+
+
+      change set_attribute(:currency, arg(:currency))
 
       change run_oban_trigger(:process)
     end

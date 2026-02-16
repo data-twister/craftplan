@@ -19,7 +19,7 @@ defmodule Craftplan.Inventory.PurchaseOrderItem do
       end
     end
 
-    domain Craftplan.Inventory.PurchaseOrderItem
+    domain Craftplan.System
   end
 
   actions do
@@ -62,6 +62,12 @@ defmodule Craftplan.Inventory.PurchaseOrderItem do
       unit_price = Money.to_currency(arg(:unit_price), arg(:currency))
       change set_attribute(:unit_price, unit_price)
 
+    end
+
+    update :oban do
+      accept []
+      argument :currency, :string
+      change set_attribute(:currency, arg(:currency))
       change run_oban_trigger(:process)
     end
   end

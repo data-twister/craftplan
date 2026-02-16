@@ -21,7 +21,7 @@ defmodule Craftplan.Catalog.LaborStep do
       end
     end
 
-    domain Craftplan.Catalog.LaborStep
+    domain Craftplan.System
   end
 
   actions do
@@ -70,7 +70,12 @@ defmodule Craftplan.Catalog.LaborStep do
 
       rate_override = Money.to_currency(arg(:rate_override), arg(:currency))
       change set_attribute(:rate_override, rate_override)
+    end
 
+    update :oban do
+      accept []
+      argument :currency, :string
+      change set_attribute(:currency, arg(:currency))
       change run_oban_trigger(:process)
     end
   end

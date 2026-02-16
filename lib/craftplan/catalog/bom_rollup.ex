@@ -47,10 +47,6 @@ defmodule Craftplan.Catalog.BOMRollup do
       accept []
 
       argument :currency, :string
-      argument :material_cost, AshMoney.Types.Money
-      argument :labor_cost, AshMoney.Types.Money
-      argument :overhead_cost, AshMoney.Types.Money
-      argument :unit_cost, AshMoney.Types.Money
 
       material_cost = Money.to_currency(arg(:material_cost), arg(:currency))
       change set_attribute(:material_cost, material_cost)
@@ -62,7 +58,13 @@ defmodule Craftplan.Catalog.BOMRollup do
       change set_attribute(:overhead_cost, overhead_cost)
 
       unit_cost = Money.to_currency(arg(:overhead_cost), arg(:currency))
-      change set_attribute(:unit_cost, unit_cost)
+      change set_attribute(:unit_cost, arg(:unit_cost))
+    end
+
+    update :oban do
+      accept []
+      argument :currency, :string
+      change set_attribute(:currency, arg(:currency))
       change run_oban_trigger(:process)
     end
   end
