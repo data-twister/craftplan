@@ -16,7 +16,7 @@ defmodule Craftplan.Orders.OrderTotalCost do
 
   @impl true
   def calculate(records, opts, _context) do
-    currency = Keyword.get(opts, :currency, :USD)
+    currency = Keyword.get(opts, :currency, :EUR)
     Enum.map(records, &cost(&1, currency))
   end
 

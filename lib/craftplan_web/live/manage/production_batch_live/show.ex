@@ -112,7 +112,7 @@ defmodule CraftplanWeb.ProductionBatchLive.Show do
                 value={
                   format_money(
                     @settings.currency,
-                    (@totals && @totals.unit_cost) || Money.new(0, :USD)
+                    (@totals && @totals.unit_cost) || Money.new(0, :EUR)
                   )
                 }
               >
@@ -123,12 +123,12 @@ defmodule CraftplanWeb.ProductionBatchLive.Show do
             <div class="mt-6 grid gap-4 md:grid-cols-3">
               <.cost_chip
                 label="Material Cost"
-                amount={(@totals && @totals.material_cost) || Money.new(0, :USD)}
+                amount={(@totals && @totals.material_cost) || Money.new(0, :EUR)}
                 currency={@settings.currency}
               />
               <.cost_chip
                 label="Labor Cost"
-                amount={(@totals && @totals.labor_cost) || Money.new(0, :USD)}
+                amount={(@totals && @totals.labor_cost) || Money.new(0, :EUR)}
                 currency={@settings.currency}
               />
               <.cost_chip

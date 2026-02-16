@@ -15,7 +15,7 @@ defmodule Craftplan.Orders.InvoicePdf do
   """
   def generate_pdf(reference, opts \\ []) do
     actor = Keyword.get(opts, :actor)
-    currency = Keyword.get(opts, :currency, :USD)
+    currency = Keyword.get(opts, :currency, :EUR)
 
     order =
       Orders.get_order_by_reference!(reference,

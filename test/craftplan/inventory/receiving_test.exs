@@ -13,7 +13,7 @@ defmodule Craftplan.Inventory.ReceivingTest do
         name: name,
         sku: sku,
         unit: unit,
-        price: Money.new(price, :USD)
+        price: Money.new(price, :EUR)
       })
       |> Ash.create(actor: actor)
 
@@ -54,7 +54,7 @@ defmodule Craftplan.Inventory.ReceivingTest do
         purchase_order_id: po.id,
         material_id: mat.id,
         quantity: Decimal.new(50),
-        unit_price: Money.new("1.00", :USD)
+        unit_price: Money.new("1.00", :EUR)
       })
       |> Ash.create(actor: actor)
 

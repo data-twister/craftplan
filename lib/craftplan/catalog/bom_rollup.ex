@@ -37,22 +37,22 @@ defmodule Craftplan.Catalog.BOMRollup do
 
     attribute :material_cost, AshMoney.Types.Money do
       allow_nil? false
-      default Money.new!(0, :USD)
+      default Money.new!(0, :EUR)
     end
 
     attribute :labor_cost, AshMoney.Types.Money do
       allow_nil? false
-      default Money.new!(0, :USD)
+      default Money.new!(0, :EUR)
     end
 
     attribute :overhead_cost, AshMoney.Types.Money do
       allow_nil? false
-      default Money.new!(0, :USD)
+      default Money.new!(0, :EUR)
     end
 
     attribute :unit_cost, AshMoney.Types.Money do
       allow_nil? false
-      default Money.new!(0, :USD)
+      default Money.new!(0, :EUR)
     end
 
     # Flattened materials used per unit (JSONB map: material_id => quantity as string)

@@ -21,7 +21,7 @@ defmodule Craftplan.CSV.ProductsImporterTest do
     test "inserts new products and updates existing ones" do
       actor = Craftplan.DataCase.staff_actor()
 
-      csv1 = "name,sku,price,currency\nProd A,PA-1,1.00,USD\nProd B,PB-2,2.50,USD\n"
+      csv1 = "name,sku,price,currency\nProd A,PA-1,1.00,EUR\nProd B,PB-2,2.50,EUR\n"
 
       assert {:ok, %{inserted: 2, updated: 0, errors: []}} =
                Products.import(csv1, delimiter: ",", mapping: %{}, actor: actor)
@@ -31,7 +31,7 @@ defmodule Craftplan.CSV.ProductsImporterTest do
       assert {:ok, _} = Catalog.get_product_by_sku("PB-2", actor: actor)
 
       # Update one
-      csv2 = "name,sku,price,currency\nProd A v2,PA-1,1.25,USD\nProd B,PB-2,2.50,USD\n"
+      csv2 = "name,sku,price,currency\nProd A v2,PA-1,1.25,EUR\nProd B,PB-2,2.50,EUR\n"
 
       assert {:ok, %{inserted: 0, updated: updated, errors: []}} =
                Products.import(csv2, delimiter: ",", mapping: %{}, actor: actor)

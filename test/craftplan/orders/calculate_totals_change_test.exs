@@ -24,7 +24,7 @@ defmodule Craftplan.Orders.CalculateTotalsChangeTest do
       |> Ash.Changeset.for_create(:create, %{
         name: "Test Product",
         status: :active,
-        price: Money.new("12.50", :USD),
+        price: Money.new("12.50", :EUR),
         sku: "TP-001"
       })
       |> Ash.create(actor: staff)
@@ -44,11 +44,11 @@ defmodule Craftplan.Orders.CalculateTotalsChangeTest do
         customer_id: customer.id,
         delivery_date: DateTime.utc_now(),
         items: items,
-        currency: :USD
+        currency: :EUR
       })
       |> Ash.create(actor: staff)
 
-    assert order.subtotal == Money.new("25.00", :USD)
-    assert order.total == Money.new("25.00", :USD)
+    assert order.subtotal == Money.new("25.00", :EUR)
+    assert order.total == Money.new("25.00", :EUR)
   end
 end

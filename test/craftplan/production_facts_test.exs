@@ -24,7 +24,7 @@ defmodule Craftplan.ProductionFactsTest do
       |> Ash.Changeset.for_create(:create, %{
         name: "Prod",
         status: :active,
-        price: Money.new("9.00", :USD),
+        price: Money.new("9.00", :EUR),
         sku: "PR-1",
         max_daily_quantity: 4
       })
@@ -43,11 +43,9 @@ defmodule Craftplan.ProductionFactsTest do
         customer_id: c.id,
         delivery_date: dt1,
         items: [%{product_id: p.id, quantity: Decimal.new(1), unit_price: p.price}],
-        currency: :USD
+        currency: :EUR
       })
       |> Ash.create(actor: staff)
-
-    IO.inspect(order, label: "order")
 
     {:ok, _} =
       Orders.Order
@@ -55,7 +53,7 @@ defmodule Craftplan.ProductionFactsTest do
         customer_id: c.id,
         delivery_date: dt1,
         items: [%{product_id: p.id, quantity: Decimal.new(2), unit_price: p.price}],
-        currency: :USD
+        currency: :EUR
       })
       |> Ash.create(actor: staff)
 
@@ -66,7 +64,7 @@ defmodule Craftplan.ProductionFactsTest do
         customer_id: c.id,
         delivery_date: dt2,
         items: [%{product_id: p.id, quantity: Decimal.new(1), unit_price: p.price}],
-        currency: :USD
+        currency: :EUR
       })
       |> Ash.create(actor: staff)
 

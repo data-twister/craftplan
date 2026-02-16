@@ -66,7 +66,7 @@ defmodule Craftplan.Settings.Settings do
     attribute :currency, Craftplan.Types.Currency do
       public? true
       allow_nil? false
-      default :USD
+      default :EUR
     end
 
     # Tax configuration
@@ -114,13 +114,13 @@ defmodule Craftplan.Settings.Settings do
     attribute :shipping_flat, AshMoney.Types.Money do
       public? true
       allow_nil? false
-      default Money.new!(0, :USD)
+      default Money.new!(0, :EUR)
     end
 
     attribute :labor_hourly_rate, AshMoney.Types.Money do
       public? true
       allow_nil? false
-      default Money.new!(0, :USD)
+      default Money.new!(0, :EUR)
       description "Default hourly labor rate used for cost calculations."
     end
 

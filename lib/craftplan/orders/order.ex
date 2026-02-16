@@ -59,14 +59,15 @@ defmodule Craftplan.Orders.Order do
         :payment_method,
         :discount_type,
         :discount_value,
-        :delivery_method,
-        :currency
+        :delivery_method
       ]
 
+      argument :currency, :string, default: "EUR"
       argument :items, {:array, :map}
 
+      change set_attribute(:currency, arg(:currency))
       change manage_relationship(:items, type: :direct_control)
-      change {CalculateTotals, [currency: :USD]}
+      change {CalculateTotals, [currency: arg(:currency)]}
       change {ValidateConstraints, []}
     end
 
@@ -86,14 +87,16 @@ defmodule Craftplan.Orders.Order do
         :delivery_method,
         :tax_total,
         :shipping_total,
-        :discount_total,
-        :currency
+        :discount_total
       ]
+
+      argument :currency, :string, default: "EUR"
 
       argument :items, {:array, :map}
 
+      change set_attribute(:currency, arg(:currency))
       change manage_relationship(:items, type: :direct_control)
-      change {CalculateTotals, [currency: :USD]}
+      change {CalculateTotals, [currency: arg(:currency)]}
       change {ValidateConstraints, []}
     end
 
@@ -238,7 +241,7 @@ defmodule Craftplan.Orders.Order do
 
     attribute :currency, Craftplan.Types.Currency do
       allow_nil? false
-      default :USD
+      default :EUR
     end
 
     attribute :reference, :string do
@@ -313,27 +316,27 @@ defmodule Craftplan.Orders.Order do
     # Monetary totals (persisted)
     attribute :subtotal, AshMoney.Types.Money do
       allow_nil? false
-      default Money.new!(0, :USD)
+      default Money.new!(0, :EUR)
     end
 
     attribute :tax_total, AshMoney.Types.Money do
       allow_nil? false
-      default Money.new!(0, :USD)
+      default Money.new!(0, :EUR)
     end
 
     attribute :shipping_total, AshMoney.Types.Money do
       allow_nil? false
-      default Money.new!(0, :USD)
+      default Money.new!(0, :EUR)
     end
 
     attribute :discount_total, AshMoney.Types.Money do
       allow_nil? false
-      default Money.new!(0, :USD)
+      default Money.new!(0, :EUR)
     end
 
     attribute :total, AshMoney.Types.Money do
       allow_nil? false
-      default Money.new!(0, :USD)
+      default Money.new!(0, :EUR)
     end
 
     attribute :paid_at, :utc_datetime do

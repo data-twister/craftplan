@@ -23,7 +23,7 @@ defmodule Craftplan.Orders.TotalsUpdateAfterItemsTest do
       |> Ash.Changeset.for_create(:create, %{
         name: "Widget",
         status: :active,
-        price: Money.new("3.25", :USD),
+        price: Money.new("3.25", :EUR),
         sku: "W-1"
       })
       |> Ash.create(actor: staff)
@@ -33,12 +33,12 @@ defmodule Craftplan.Orders.TotalsUpdateAfterItemsTest do
       |> Ash.Changeset.for_create(:create, %{
         customer_id: customer.id,
         delivery_date: DateTime.utc_now(),
-        currency: :USD
+        currency: :EUR
       })
       |> Ash.create(actor: staff)
 
-    assert order.subtotal == Money.new(0, :USD)
-    assert order.total == Money.new(0, :USD)
+    assert order.subtotal == Money.new(0, :EUR)
+    assert order.total == Money.new(0, :EUR)
 
     {:ok, order} =
       order
@@ -47,7 +47,7 @@ defmodule Craftplan.Orders.TotalsUpdateAfterItemsTest do
           %{
             product_id: product.id,
             quantity: Decimal.new(4),
-            unit_price: Money.new("3.25", :USD)
+            unit_price: Money.new("3.25", :EUR)
           }
         ]
       })
@@ -55,7 +55,7 @@ defmodule Craftplan.Orders.TotalsUpdateAfterItemsTest do
 
     {:ok, order_after} = Orders.get_order_by_id(order.id, actor: staff)
 
-    assert order_after.subtotal == Money.new("13.00", :USD)
-    assert order_after.total == Money.new("13.00", :USD)
+    assert order_after.subtotal == Money.new("13.00", :EUR)
+    assert order_after.total == Money.new("13.00", :EUR)
   end
 end

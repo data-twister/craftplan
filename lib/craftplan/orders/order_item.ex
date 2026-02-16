@@ -167,25 +167,25 @@ defmodule Craftplan.Orders.OrderItem do
 
     attribute :material_cost, AshMoney.Types.Money do
       allow_nil? false
-      default Money.new!(0, :USD)
+      default Money.new!(0, :EUR)
       description "Material cost allocated to this order item during batch completion"
     end
 
     attribute :labor_cost, AshMoney.Types.Money do
       allow_nil? false
-      default Money.new!(0, :USD)
+      default Money.new!(0, :EUR)
       description "Labor cost allocated to this order item during batch completion"
     end
 
     attribute :overhead_cost, AshMoney.Types.Money do
       allow_nil? false
-      default Money.new!(0, :USD)
+      default Money.new!(0, :EUR)
       description "Overhead cost allocated to this order item during batch completion"
     end
 
     attribute :unit_cost, AshMoney.Types.Money do
       allow_nil? false
-      default Money.new!(0, :USD)
+      default Money.new!(0, :EUR)
       description "Per-unit production cost captured at batch completion"
     end
 

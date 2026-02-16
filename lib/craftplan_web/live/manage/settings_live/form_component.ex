@@ -455,9 +455,9 @@ defmodule CraftplanWeb.SettingsLive.FormComponent do
   end
 
   defp currency_options do
-    [{"US Dollar", :USD}, {"Euro", :EUR}] ++
+    [{"US Dollar", :EUR}, {"Euro", :EUR}] ++
       (Craftplan.Types.Currency.values()
-       |> Enum.reject(fn code -> code in [:USD, :EUR] end)
+       |> Enum.reject(fn code -> code in [:EUR, :EUR] end)
        |> Enum.map(fn code ->
          case Money.Currency.currency_for_code(code) do
            {:ok, currency} -> {currency.name, code}

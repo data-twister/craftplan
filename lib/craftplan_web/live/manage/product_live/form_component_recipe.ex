@@ -91,7 +91,7 @@ defmodule CraftplanWeb.ProductLive.FormComponentRecipe do
                 <div class="hidden border-r border-stone-200 p-0 pr-6 pb-4 pl-4 font-normal last:border-r-0 md:block">
                   <span>Total Cost</span>
                   <span class="text-stone-700">
-                    ({format_money(@settings.currency, @materials_total || Money.new(0, :USD))})
+                    ({format_money(@settings.currency, @materials_total || Money.new(0, :EUR))})
                   </span>
                 </div>
                 <div class="hidden border-r border-stone-200 p-0 pr-6 pb-4 pl-4 font-normal last:border-r-0 md:block">
@@ -339,7 +339,7 @@ defmodule CraftplanWeb.ProductLive.FormComponentRecipe do
                   <div class="border-r border-stone-200 p-0 pr-6 pb-4 pl-4 font-normal last:border-r-0">
                     Cost per unit
                     <span class="text-stone-700">
-                      ({format_money(@settings.currency, @labor_per_unit_cost || Money.new(0, :USD))})
+                      ({format_money(@settings.currency, @labor_per_unit_cost || Money.new(0, :EUR))})
                     </span>
                   </div>
                   <div class="border-r border-stone-200 p-0 pr-6 pb-4 pl-4 font-normal last:border-r-0">
@@ -600,7 +600,7 @@ defmodule CraftplanWeb.ProductLive.FormComponentRecipe do
                     </div>
                     <div class="relative border-b border-stone-200 p-0 pl-4">
                       <div class="block py-3 text-sm text-stone-800">
-                        {format_money(@settings.currency, material.price || Money.new(0, :USD))} per {material.unit}
+                        {format_money(@settings.currency, material.price || Money.new(0, :EUR))} per {material.unit}
                       </div>
                     </div>
                   </button>
@@ -674,7 +674,7 @@ defmodule CraftplanWeb.ProductLive.FormComponentRecipe do
                     </div>
                     <div class="relative border-b border-stone-200 p-0 pl-4">
                       <div class="block py-3 text-sm text-stone-800">
-                        {format_money(@settings.currency, product.bom_unit_cost || Money.new(0, :USD))} per unit
+                        {format_money(@settings.currency, product.bom_unit_cost || Money.new(0, :EUR))} per unit
                       </div>
                     </div>
                   </button>
@@ -736,7 +736,7 @@ defmodule CraftplanWeb.ProductLive.FormComponentRecipe do
     socket =
       socket
       |> assign(assigns)
-      |> assign(:currency, :USD)
+      |> assign(:currency, :EUR)
 
     socket = assign_lists(socket)
     socket = assign_form(socket)
@@ -1037,7 +1037,7 @@ defmodule CraftplanWeb.ProductLive.FormComponentRecipe do
 
   defp compute_recipe_totals(socket) do
     actor_settings = socket.assigns.settings
-    currency = socket.assigns.currency || :USD
+    currency = socket.assigns.currency || :EUR
 
     comps = socket.assigns.form.source.forms[:components] || []
 

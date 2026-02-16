@@ -379,7 +379,7 @@ defmodule CraftplanWeb.ProductLive.Show do
   end
 
   defp apply_markup(unit_cost, mode, value) do
-    unit = unit_cost || Money.new(0, :USD)
+    unit = unit_cost || Money.new(0, :EUR)
     val = value || Decimal.new(0)
 
     case mode do

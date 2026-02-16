@@ -189,7 +189,7 @@ defmodule Craftplan.Production.Batching do
     actor = Keyword.fetch!(opts, :actor)
     produced_qty = opts |> Keyword.fetch!(:produced_qty) |> normalize()
     _duration_minutes = opts |> Keyword.get(:duration_minutes, 0) |> normalize()
-    currency = Keyword.get(opts, :currency, :USD)
+    currency = Keyword.get(opts, :currency, :EUR)
 
     batch = Ash.reload!(batch, actor: actor)
 

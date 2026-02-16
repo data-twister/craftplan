@@ -390,7 +390,7 @@ defmodule Craftplan.Production do
     |> Map.put(:unit_cost, unit_cost)
   end
 
-  def batch_order_rows(items, currency \\ :usd) do
+  def batch_order_rows(items, currency \\ :EUR) do
     items
     |> Enum.map(fn item ->
       order = item.order
