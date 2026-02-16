@@ -5,7 +5,7 @@ defmodule Craftplan.Orders.Order do
     domain: Craftplan.Orders,
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer],
-    extensions: [AshJsonApi.Resource, AshGraphql.Resource]
+    extensions: [AshJsonApi.Resource, AshGraphql.Resource, AshOban]
 
   alias Craftplan.Orders.Changes.CalculateTotals
   alias Craftplan.Orders.Changes.ValidateConstraints
@@ -41,6 +41,17 @@ defmodule Craftplan.Orders.Order do
   postgres do
     table "orders_orders"
     repo Craftplan.Repo
+  end
+
+  oban do
+    triggers do
+      trigger :process do
+        action :change_currency
+        worker_read_action(:read)
+      end
+    end
+
+    domain Craftplan.Orders.Order
   end
 
   actions do
@@ -208,9 +219,33 @@ defmodule Craftplan.Orders.Order do
                   )
               )
     end
+
+    update :change_currency do
+      accept []
+
+      argument :currency, :string
+      argument :subtotal, AshMoney.Types.Money
+      argument :total, AshMoney.Types.Money
+
+      subtotal = Money.to_currency(arg(:subtotal), arg(:currency))
+      change set_attribute(:subtotal, subtotal)
+
+      shipping_total = Money.to_currency(arg(:shipping_total), arg(:currency))
+      change set_attribute(:shipping_total, shipping_total)
+      discount_total = Money.to_currency(arg(:discount_total), arg(:currency))
+      change set_attribute(:discount_total, discount_total)
+      total = Money.to_currency(arg(:total), arg(:currency))
+      change set_attribute(:total, total)
+
+      change run_oban_trigger(:process)
+    end
   end
 
   policies do
+    bypass AshOban.Checks.AshObanInteraction do
+      authorize_if always()
+    end
+
     # API key scope check
     policy always() do
       authorize_if {Craftplan.Accounts.Checks.ApiScopeCheck, []}

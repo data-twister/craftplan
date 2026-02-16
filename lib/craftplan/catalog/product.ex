@@ -5,9 +5,8 @@ defmodule Craftplan.Catalog.Product do
     domain: Craftplan.Catalog,
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer],
-    extensions: [AshJsonApi.Resource, AshGraphql.Resource]
+    extensions: [AshJsonApi.Resource, AshGraphql.Resource, AshOban]
 
-  alias AshMoney.Types.Money
   alias Craftplan.Catalog.BOM
 
   json_api do
@@ -41,6 +40,17 @@ defmodule Craftplan.Catalog.Product do
   postgres do
     table "catalog_products"
     repo Craftplan.Repo
+  end
+
+  oban do
+    triggers do
+      trigger :process do
+        action :change_currency
+        worker_read_action(:read)
+      end
+    end
+
+    domain Craftplan.Catalog.Product
   end
 
   actions do
@@ -101,9 +111,25 @@ defmodule Craftplan.Catalog.Product do
 
       change set_attribute(:price, {arg(:currency), arg(:price)})
     end
+
+    update :change_currency do
+      accept []
+
+      argument :currency, :string
+      argument :price, AshMoney.Types.Money
+
+      price = Money.to_currency(arg(:price), arg(:currency))
+      change set_attribute(:price, price)
+
+      change run_oban_trigger(:process)
+    end
   end
 
   policies do
+    bypass AshOban.Checks.AshObanInteraction do
+      authorize_if always()
+    end
+
     # API key scope check
     policy always() do
       authorize_if {Craftplan.Accounts.Checks.ApiScopeCheck, []}
@@ -144,7 +170,7 @@ defmodule Craftplan.Catalog.Product do
       default :draft
     end
 
-    attribute :price, Money do
+    attribute :price, AshMoney.Types.Money do
       public? true
       allow_nil? false
     end
@@ -196,13 +222,13 @@ defmodule Craftplan.Catalog.Product do
 
   calculations do
     calculate :materials_cost,
-              Money,
+              AshMoney.Types.Money,
               Craftplan.Catalog.Product.Calculations.MaterialCost do
       description "Material cost per unit based on the active BOM."
     end
 
     calculate :bom_unit_cost,
-              Money,
+              AshMoney.Types.Money,
               Craftplan.Catalog.Product.Calculations.UnitCost do
       description "Total unit cost (materials + labor + overhead) derived from the active BOM."
     end
@@ -214,7 +240,7 @@ defmodule Craftplan.Catalog.Product do
     end
 
     calculate :gross_profit,
-              Money,
+              AshMoney.Types.Money,
               Craftplan.Catalog.Product.Calculations.GrossProfit do
       description "The profit amount calculated as selling price minus unit cost"
     end

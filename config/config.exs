@@ -65,7 +65,13 @@ config :esbuild,
 config :ex_cldr, default_backend: Craftplan.Cldr
 
 config :ex_money,
-  open_exchange_rates_app_id: {:system, "OPEN_EXCHANGE_RATES_APP_ID"}
+  open_exchange_rates_app_id: {:system, "OPEN_EXCHANGE_RATES_APP_ID"},
+  exchange_rates_retrieve_every: 300_000,
+  api_module: Money.ExchangeRates.OpenExchangeRates,
+  callback_module: Money.ExchangeRates.Callback,
+  exchange_rates_cache_module: Money.ExchangeRates.Cache.Ets,
+  json_library: Jason,
+  default_cldr_backend: Craftplan.Cldr
 
 # Configures Elixir's Logger
 config :logger, :console,

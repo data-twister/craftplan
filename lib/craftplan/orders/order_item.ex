@@ -5,7 +5,7 @@ defmodule Craftplan.Orders.OrderItem do
     domain: Craftplan.Orders,
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer],
-    extensions: [AshJsonApi.Resource, AshGraphql.Resource]
+    extensions: [AshJsonApi.Resource, AshGraphql.Resource, AshOban]
 
   alias Craftplan.Orders.Changes.AssignBatchCodeAndCost
 
@@ -38,6 +38,17 @@ defmodule Craftplan.Orders.OrderItem do
   postgres do
     table "orders_items"
     repo Craftplan.Repo
+  end
+
+  oban do
+    triggers do
+      trigger :process do
+        action :change_currency
+        worker_read_action(:read)
+      end
+    end
+
+    domain Craftplan.Orders.OrderItem
   end
 
   @plan_load [
@@ -116,9 +127,41 @@ defmodule Craftplan.Orders.OrderItem do
       prepare build(load: @plan_load)
       filter expr(order.delivery_date <= ^arg(:to))
     end
+
+    update :change_currency do
+      accept []
+
+      argument :currency, :string
+      argument :unit_price, AshMoney.Types.Money
+      argument :labor_cost, AshMoney.Types.Money
+      argument :material_cost, AshMoney.Types.Money
+      argument :overhead_cost, AshMoney.Types.Money
+      argument :unit_cost, AshMoney.Types.Money
+
+      unit_price = Money.to_currency(arg(:unit_price), arg(:currency))
+      change set_attribute(:unit_price, unit_price)
+
+      labor_cost = Money.to_currency(arg(:labor_cost), arg(:currency))
+      change set_attribute(:labor_cost, labor_cost)
+
+      material_cost = Money.to_currency(arg(:material_cost), arg(:currency))
+      change set_attribute(:material_cost, material_cost)
+
+      overhead_cost = Money.to_currency(arg(:overhead_cost), arg(:currency))
+      change set_attribute(:overhead_cost, overhead_cost)
+
+      unit_cost = Money.to_currency(arg(:unit_cost), arg(:currency))
+      change set_attribute(:unit_cost, unit_cost)
+
+      change run_oban_trigger(:process)
+    end
   end
 
   policies do
+    bypass AshOban.Checks.AshObanInteraction do
+      authorize_if always()
+    end
+
     # API key scope check
     policy always() do
       authorize_if {Craftplan.Accounts.Checks.ApiScopeCheck, []}

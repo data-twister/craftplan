@@ -3,11 +3,23 @@ defmodule Craftplan.Catalog.BOMRollup do
   use Ash.Resource,
     otp_app: :craftplan,
     domain: Craftplan.Catalog,
-    data_layer: AshPostgres.DataLayer
+    data_layer: AshPostgres.DataLayer,
+    extensions: [AshOban]
 
   postgres do
     table "catalog_bom_rollups"
     repo Craftplan.Repo
+  end
+
+  oban do
+    triggers do
+      trigger :process do
+        action :change_currency
+        worker_read_action(:read)
+      end
+    end
+
+    domain Craftplan.Catalog.BOMRollup
   end
 
   actions do
@@ -29,6 +41,29 @@ defmodule Craftplan.Catalog.BOMRollup do
 
     update :update do
       accept [:material_cost, :labor_cost, :overhead_cost, :unit_cost, :components_map]
+    end
+
+    update :change_currency do
+      accept []
+
+      argument :currency, :string
+      argument :material_cost, AshMoney.Types.Money
+      argument :labor_cost, AshMoney.Types.Money
+      argument :overhead_cost, AshMoney.Types.Money
+      argument :unit_cost, AshMoney.Types.Money
+
+      material_cost = Money.to_currency(arg(:material_cost), arg(:currency))
+      change set_attribute(:material_cost, material_cost)
+
+      labor_cost = Money.to_currency(arg(:labor_cost), arg(:currency))
+      change set_attribute(:labor_cost, labor_cost)
+
+      overhead_cost = Money.to_currency(arg(:overhead_cost), arg(:currency))
+      change set_attribute(:overhead_cost, overhead_cost)
+
+      unit_cost = Money.to_currency(arg(:overhead_cost), arg(:currency))
+      change set_attribute(:unit_cost, unit_cost)
+      change run_oban_trigger(:process)
     end
   end
 

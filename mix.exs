@@ -89,7 +89,8 @@ defmodule Craftplan.MixProject do
       {:icalendar, "~> 1.1"},
       {:imprintor, "~> 0.5"},
       {:open_api_spex, "~> 3.16"},
-      {:req, "~> 0.5", only: [:dev, :test]}
+      {:req, "~> 0.5", only: [:dev, :test]},
+      {:ash_oban, "~> 0.7.1"}
     ]
   end
 

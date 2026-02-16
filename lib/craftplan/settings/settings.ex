@@ -36,6 +36,23 @@ defmodule Craftplan.Settings.Settings do
     read :get do
       get? true
     end
+
+    update :currency do
+      require_atomic? false
+
+      accept []
+
+      argument :currency, :string, default: "EUR"
+      argument :shipping_flat, AshMoney.Types.Money
+      argument :labor_hourly_rate, AshMoney.Types.Money
+
+      shipping_flat = Money.to_currency(arg(:shipping_flat), arg(:currency))
+      labor_hourly_rate = Money.to_currency(arg(:labor_hourly_rate), arg(:currency))
+
+      change set_attribute(:currency, arg(:currency))
+      change set_attribute(:shipping_flat, shipping_flat)
+      change set_attribute(:labor_hourly_rate, labor_hourly_rate)
+    end
   end
 
   policies do

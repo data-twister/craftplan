@@ -5,7 +5,7 @@ defmodule Craftplan.Inventory.Material do
     domain: Craftplan.Inventory,
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer],
-    extensions: [AshJsonApi.Resource, AshGraphql.Resource]
+    extensions: [AshJsonApi.Resource, AshGraphql.Resource, AshOban]
 
   alias Craftplan.Inventory.MaterialAllergen
   alias Craftplan.Inventory.MaterialNutritionalFact
@@ -39,6 +39,17 @@ defmodule Craftplan.Inventory.Material do
   postgres do
     table "inventory_materials"
     repo Craftplan.Repo
+  end
+
+  oban do
+    triggers do
+      trigger :process do
+        action :change_currency
+        worker_read_action(:read)
+      end
+    end
+
+    domain Craftplan.Inventory.Material
   end
 
   actions do
@@ -87,6 +98,18 @@ defmodule Craftplan.Inventory.Material do
       change manage_relationship(:material_nutritional_facts, type: :direct_control)
     end
 
+    update :change_currency do
+      accept []
+
+      argument :currency, :string
+      argument :price, AshMoney.Types.Money
+
+      price = Money.to_currency(arg(:price), arg(:currency))
+      change set_attribute(:price, price)
+
+      change run_oban_trigger(:process)
+    end
+
     read :list do
       prepare build(sort: :name)
 
@@ -105,6 +128,10 @@ defmodule Craftplan.Inventory.Material do
   end
 
   policies do
+    bypass AshOban.Checks.AshObanInteraction do
+      authorize_if always()
+    end
+
     # Public reads (used for planner math, printouts, and exports); restrict writes
     # API key scope check
     policy always() do

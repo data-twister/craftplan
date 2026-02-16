@@ -3,13 +3,25 @@ defmodule Craftplan.Catalog.LaborStep do
   use Ash.Resource,
     otp_app: :craftplan,
     domain: Craftplan.Catalog,
-    data_layer: AshPostgres.DataLayer
+    data_layer: AshPostgres.DataLayer,
+    extensions: [AshOban]
 
   alias Craftplan.Catalog.Services.BOMRollup
 
   postgres do
     table "catalog_labor_steps"
     repo Craftplan.Repo
+  end
+
+  oban do
+    triggers do
+      trigger :process do
+        action :change_currency
+        worker_read_action(:read)
+      end
+    end
+
+    domain Craftplan.Catalog.LaborStep
   end
 
   actions do
@@ -48,6 +60,18 @@ defmodule Craftplan.Catalog.LaborStep do
 
                {:ok, result}
              end)
+    end
+
+    update :change_currency do
+      accept []
+
+      argument :currency, :string
+      argument :rate_override, AshMoney.Types.Money
+
+      rate_override = Money.to_currency(arg(:rate_override), arg(:currency))
+      change set_attribute(:rate_override, rate_override)
+
+      change run_oban_trigger(:process)
     end
   end
 

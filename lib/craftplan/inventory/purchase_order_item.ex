@@ -4,11 +4,22 @@ defmodule Craftplan.Inventory.PurchaseOrderItem do
     otp_app: :craftplan,
     domain: Craftplan.Inventory,
     data_layer: AshPostgres.DataLayer,
-    authorizers: [Ash.Policy.Authorizer]
+    authorizers: [Ash.Policy.Authorizer, AshOban]
 
   postgres do
     table "inventory_purchase_order_items"
     repo Craftplan.Repo
+  end
+
+  oban do
+    triggers do
+      trigger :process do
+        action :change_currency
+        worker_read_action(:read)
+      end
+    end
+
+    domain Craftplan.Inventory.PurchaseOrderItem
   end
 
   actions do
@@ -41,9 +52,25 @@ defmodule Craftplan.Inventory.PurchaseOrderItem do
     update :update do
       accept [:quantity, :unit_price]
     end
+
+    update :change_currency do
+      accept []
+
+      argument :currency, :string
+      argument :unit_price, AshMoney.Types.Money
+
+      unit_price = Money.to_currency(arg(:unit_price), arg(:currency))
+      change set_attribute(:unit_price, unit_price)
+
+      change run_oban_trigger(:process)
+    end
   end
 
   policies do
+    bypass AshOban.Checks.AshObanInteraction do
+      authorize_if always()
+    end
+
     policy action_type(:read) do
       authorize_if expr(^actor(:role) in [:staff, :admin])
     end
