@@ -47,16 +47,6 @@ defmodule Craftplan.Catalog.Product do
     defaults [
       :read,
       :destroy,
-      create: [
-        :name,
-        :status,
-        :price,
-        :sku,
-        :photos,
-        :featured_photo,
-        :selling_availability,
-        :max_daily_quantity
-      ],
       update: [
         :name,
         :status,
@@ -90,6 +80,26 @@ defmodule Craftplan.Catalog.Product do
     read :keyset do
       prepare build(sort: :name)
       pagination keyset?: true
+    end
+
+    create :create do
+      primary? true
+
+      accept [
+        :name,
+        :status,
+        :price,
+        :sku,
+        :photos,
+        :featured_photo,
+        :selling_availability,
+        :max_daily_quantity
+      ]
+
+      argument :price, :string
+      argument :currency, :string, default: "EUR"
+
+      change set_attribute(:price, {arg(:currency), arg(:price)})
     end
   end
 
