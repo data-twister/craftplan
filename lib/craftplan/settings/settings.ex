@@ -5,7 +5,7 @@ defmodule Craftplan.Settings.Settings do
     domain: Craftplan.Settings,
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer],
-    extensions: [AshJsonApi.Resource, AshOban]
+    extensions: [AshJsonApi.Resource]
 
   alias Craftplan.Types.EncryptedBinary
 
@@ -24,17 +24,6 @@ defmodule Craftplan.Settings.Settings do
     repo Craftplan.Repo
   end
 
-  oban do
-    triggers do
-      trigger :process do
-        action :change_currency
-        worker_read_action(:read)
-      end
-    end
-
-    domain Craftplan.System
-  end
-
   actions do
     default_accept :*
 
@@ -49,6 +38,7 @@ defmodule Craftplan.Settings.Settings do
     end
 
     update :update do
+      require_atomic? false
       accept [
         :currency,
         :shipping_flat,
@@ -68,33 +58,17 @@ defmodule Craftplan.Settings.Settings do
 
       argument :currency, :string, default: "EUR"
       change set_attribute(:currency, arg(:currency))
-      change run_oban_trigger(:process)
-    end
 
-    update :change_currency do
-      require_atomic? false
+      argument :shipping_flat, :string
+      argument :labor_hourly_rate, :string
 
-      accept []
-
-      argument :currency, :string, default: "EUR"
-      argument :shipping_flat, AshMoney.Types.Money
-      argument :labor_hourly_rate, AshMoney.Types.Money
-
-      shipping_flat = Money.to_currency(arg(:shipping_flat), arg(:currency))
-      labor_hourly_rate = Money.to_currency(arg(:labor_hourly_rate), arg(:currency))
-
-      change set_attribute(:currency, arg(:currency))
-      change set_attribute(:shipping_flat, shipping_flat)
-      change set_attribute(:labor_hourly_rate, labor_hourly_rate)
+      change set_attribute(:shipping_flat, {arg(:currency), arg(:shipping_flat)})
+      change set_attribute(:labor_hourly_rate, {arg(:currency), arg(:labor_hourly_rate)})
       change {Craftplan.Settings.Settings.AssignCurrency, [currency: arg(:currency)]}
     end
   end
 
   policies do
-    bypass AshOban.Checks.AshObanInteraction do
-      authorize_if always()
-    end
-
     # API key scope check
     policy always() do
       authorize_if {Craftplan.Accounts.Checks.ApiScopeCheck, []}
@@ -169,13 +143,13 @@ defmodule Craftplan.Settings.Settings do
 
     attribute :shipping_flat, AshMoney.Types.Money do
       public? true
-      allow_nil? false
+      allow_nil? true
       default Money.new!(0, :EUR)
     end
 
     attribute :labor_hourly_rate, AshMoney.Types.Money do
       public? true
-      allow_nil? false
+      allow_nil? true
       default Money.new!(0, :EUR)
       description "Default hourly labor rate used for cost calculations."
     end

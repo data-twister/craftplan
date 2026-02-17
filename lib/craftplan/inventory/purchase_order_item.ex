@@ -4,7 +4,8 @@ defmodule Craftplan.Inventory.PurchaseOrderItem do
     otp_app: :craftplan,
     domain: Craftplan.Inventory,
     data_layer: AshPostgres.DataLayer,
-    authorizers: [Ash.Policy.Authorizer, AshOban]
+    authorizers: [Ash.Policy.Authorizer],
+    extensions: [AshOban]
 
   postgres do
     table "inventory_purchase_order_items"
@@ -57,11 +58,10 @@ defmodule Craftplan.Inventory.PurchaseOrderItem do
       accept []
 
       argument :currency, :string
-      argument :unit_price, AshMoney.Types.Money
+      argument :unit_price, :string
 
-      unit_price = Money.to_currency(arg(:unit_price), arg(:currency))
+      unit_price = {arg(:currency), arg(:unit_price)}
       change set_attribute(:unit_price, unit_price)
-
     end
 
     update :oban do

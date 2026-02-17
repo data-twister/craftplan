@@ -1,13 +1,19 @@
 defmodule Craftplan.CSV.Importers.Products do
   @moduledoc """
   CSV importer for products (dry-run supported).
-  Expected headers: name, sku, price, status (optional).
+  Expected headers: name, sku, price, status (optional), currency.
   """
 
   alias Craftplan.Catalog.Product.Types.Status
   alias NimbleCSV.RFC4180, as: CSV
 
-  @type row :: %{name: String.t(), sku: String.t(), price: Money.t(), status: atom()}
+  @type row :: %{
+          name: String.t(),
+          sku: String.t(),
+          price: String.t(),
+          status: atom(),
+          currency: String.t()
+        }
   @type error :: %{row: non_neg_integer(), message: String.t()}
 
   @spec dry_run(String.t(), keyword) :: {:ok, %{rows: [row()], errors: [error()]}}

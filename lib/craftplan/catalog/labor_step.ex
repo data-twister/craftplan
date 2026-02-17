@@ -6,6 +6,7 @@ defmodule Craftplan.Catalog.LaborStep do
     data_layer: AshPostgres.DataLayer,
     extensions: [AshOban]
 
+  alias AshMoney.Types.Money
   alias Craftplan.Catalog.Services.BOMRollup
 
   postgres do
@@ -66,9 +67,9 @@ defmodule Craftplan.Catalog.LaborStep do
       accept []
 
       argument :currency, :string
-      argument :rate_override, AshMoney.Types.Money
+      argument :rate_override, Money
 
-      rate_override = Money.to_currency(arg(:rate_override), arg(:currency))
+      rate_override = {arg(:currency), arg(:rate_override)}
       change set_attribute(:rate_override, rate_override)
     end
 
@@ -100,7 +101,7 @@ defmodule Craftplan.Catalog.LaborStep do
       constraints min: 0
     end
 
-    attribute :rate_override, AshMoney.Types.Money do
+    attribute :rate_override, Money do
       allow_nil? true
     end
 

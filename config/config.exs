@@ -49,7 +49,7 @@ config :craftplan, Oban,
        # {"0 * * * *", Framework.Workers.Hourly}
      ]}
   ],
-  queues: [default: 10, system_process: 10]
+  queues: [default: 10, settings_process: 10]
 
 config :craftplan,
   ecto_repos: [Craftplan.Repo],

@@ -1,12 +1,18 @@
 defmodule Craftplan.CSV.Importers.Materials do
   @moduledoc """
   CSV importer for materials (dry-run + import).
-  Expected headers: name, sku, unit, price.
+  Expected headers: name, sku, unit, price, currency.
   """
 
   alias NimbleCSV.RFC4180, as: CSV
 
-  @type row :: %{name: String.t(), sku: String.t(), unit: atom(), price: Money.t()}
+  @type row :: %{
+          name: String.t(),
+          sku: String.t(),
+          unit: atom(),
+          price: String.t(),
+          currency: String.t()
+        }
   @type error :: %{row: non_neg_integer(), message: String.t()}
 
   @spec dry_run(String.t(), keyword) :: {:ok, %{rows: [row()], errors: [error()]}}

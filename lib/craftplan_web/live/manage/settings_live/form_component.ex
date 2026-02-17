@@ -343,58 +343,10 @@ defmodule CraftplanWeb.SettingsLive.FormComponent do
 
   @impl true
   def handle_event("validate", %{"settings" => setting_params}, socket) do
-    setting_params =
-      if setting_params["settings_offers_delivery"] do
-        if is_nil(setting_params["shipping_flat"]) do
-          %{
-            setting_params
-            | "shipping_flat" => Money.new!("0", String.to_atom(setting_params["currency"]))
-          }
-        else
-          %{
-            setting_params
-            | "shipping_flat" =>
-                Money.new!(
-                  setting_params["shipping_flat"],
-                  String.to_atom(setting_params["currency"])
-                )
-          }
-        end
-      else
-        %{
-          setting_params
-          | "shipping_flat" => Money.new!("0", String.to_atom(setting_params["currency"]))
-        }
-      end
-
     {:noreply, assign(socket, form: AshPhoenix.Form.validate(socket.assigns.form, setting_params))}
   end
 
   def handle_event("save", %{"settings" => setting_params}, socket) do
-    setting_params =
-      if setting_params["settings_offers_delivery"] do
-        if is_nil(setting_params["shipping_flat"]) do
-          %{
-            setting_params
-            | "shipping_flat" => Money.new!("0", String.to_atom(setting_params["currency"]))
-          }
-        else
-          %{
-            setting_params
-            | "shipping_flat" =>
-                Money.new!(
-                  setting_params["shipping_flat"],
-                  String.to_atom(setting_params["currency"])
-                )
-          }
-        end
-      else
-        %{
-          setting_params
-          | "shipping_flat" => Money.new!("0", String.to_atom(setting_params["currency"]))
-        }
-      end
-
     case AshPhoenix.Form.submit(socket.assigns.form, params: setting_params) do
       {:ok, settings} ->
         Craftplan.Mailer.apply_settings(settings)
@@ -455,9 +407,9 @@ defmodule CraftplanWeb.SettingsLive.FormComponent do
   end
 
   defp currency_options do
-    [{"US Dollar", :EUR}, {"Euro", :EUR}] ++
+    [{"US Dollar", :USD}, {"Euro", :EUR}] ++
       (Craftplan.Types.Currency.values()
-       |> Enum.reject(fn code -> code in [:EUR, :EUR] end)
+       |> Enum.reject(fn code -> code in [:USD, :EUR] end)
        |> Enum.map(fn code ->
          case Money.Currency.currency_for_code(code) do
            {:ok, currency} -> {currency.name, code}

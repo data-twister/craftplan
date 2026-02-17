@@ -82,6 +82,9 @@ defmodule Craftplan.Orders.Order do
       change {ValidateConstraints, []}
     end
 
+    read :last do
+    end
+
     update :update do
       require_atomic? false
 

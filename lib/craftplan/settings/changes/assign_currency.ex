@@ -12,52 +12,20 @@ defmodule Craftplan.Settings.Settings.AssignCurrency do
   alias Ash.NotLoaded
   alias Ash.Query
 
+  @modules [Craftplan.Orders.Order,Craftplan.Catalog.Product,Craftplan.Catalog.BOMRollup,Craftplan.Catalog.LaborStep,Craftplan.Inventory.Material,Craftplan.Inventory.PurchaseOrderItem,Craftplan.Orders.OrderItem]
+
   @impl true
   def change(changeset, opts, _context) do
-    currency = opts[:currency]
 
-    %Craftplan.Orders.Order{}
-    |> Changeset.for_update(:oban, %{
-      currency: currency
-    })
-    |> Ash.update()
-
-    %Craftplan.Catalog.Product{}
-    |> Changeset.for_update(:oban, %{
-      currency: currency
-    })
-    |> Ash.update()
-
-    %Craftplan.Catalog.BOMRollup{}
-    |> Changeset.for_update(:oban, %{
-      currency: currency
-    })
-    |> Ash.update()
-
-    %Craftplan.Catalog.LaborStep{}
-    |> Changeset.for_update(:oban, %{
-      currency: currency
-    })
-    |> Ash.update()
-
-    %Craftplan.Inventory.Material{}
-    |> Changeset.for_update(:oban, %{
-      currency: currency
-    })
-    |> Ash.update()
-
-    %Craftplan.Inventory.PurchaseOrderItem{}
-    |> Changeset.for_update(:oban, %{
-      currency: currency
-    })
-    |> Ash.update()
-
-    %Craftplan.Orders.OrderItem{}
-    |> Changeset.for_update(:oban, %{
-      currency: currency
-    })
-    |> Ash.update()
+    Ash.Changeset.after_action(changeset, fn _changeset, record ->
+      currency = opts[:currency]
+      Enum.map(@modules, fn(m) ->
+        AshOban.run_trigger(m, :process)
+      end)
+      {:ok, record}
+    end)
 
     changeset
   end
+
 end

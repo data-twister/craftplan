@@ -173,7 +173,6 @@ defmodule CraftplanWeb.SettingsLive.Index do
   @impl true
   def mount(_params, _session, socket) do
     settings = Settings.get_by_id!(socket.assigns.settings.id)
-    settings = %{settings | shipping_flat: Money.to_decimal(settings.shipping_flat)}
     allergens = Inventory.list_allergens!()
     nutritional_facts = Inventory.list_nutritional_facts!()
 
@@ -296,7 +295,6 @@ defmodule CraftplanWeb.SettingsLive.Index do
 
   @impl true
   def handle_info({CraftplanWeb.SettingsLive.FormComponent, {:saved, settings}}, socket) do
-    settings = %{settings | shipping_flat: Money.to_decimal(settings.shipping_flat)}
     {:noreply, assign(socket, :settings, settings)}
   end
 

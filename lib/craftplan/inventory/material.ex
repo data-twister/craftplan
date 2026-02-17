@@ -111,13 +111,11 @@ defmodule Craftplan.Inventory.Material do
 
       change set_attribute(:subtotal, arg(:subtotal))
       change set_attribute(:total, arg(:total))
-
     end
 
     update :oban do
       accept []
       argument :currency, :string
-
 
       change set_attribute(:currency, arg(:currency))
 
