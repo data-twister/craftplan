@@ -4,7 +4,7 @@ defmodule Craftplan.MixProject do
   def project do
     [
       app: :craftplan,
-      version: "0.3.7",
+      version: "0.3.6",
       elixir: "~> 1.15",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
@@ -41,7 +41,7 @@ defmodule Craftplan.MixProject do
       {:ash_authentication_phoenix, "~> 2.0"},
       {:ash_graphql, "~> 1.0"},
       {:ash_json_api, "~> 1.0"},
-      {:ash_money, "~> 0.1"},
+      {:ash_money, "~> 0.2.5"},
       {:ash_phoenix, "~> 2.0"},
       {:ash_postgres, "~> 2.0"},
       {:absinthe_plug, "~> 1.5"},
@@ -89,7 +89,8 @@ defmodule Craftplan.MixProject do
       {:icalendar, "~> 1.1"},
       {:imprintor, "~> 0.5"},
       {:open_api_spex, "~> 3.16"},
-      {:req, "~> 0.5", only: [:dev, :test]}
+      {:req, "~> 0.5", only: [:dev, :test]},
+      {:ash_oban, "~> 0.7.1"}
     ]
   end
 

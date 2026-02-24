@@ -19,6 +19,8 @@ config :ash,
     unit: Craftplan.Types.Unit
   ]
 
+config :ash_oban, :actor_persister, Craftplan.AshObanActorPersister
+
 # Configures the mailer
 #
 # By default it uses the "Local" adapter which stores the emails
@@ -38,6 +40,21 @@ config :craftplan, CraftplanWeb.Endpoint,
   ],
   pubsub_server: Craftplan.PubSub,
   live_view: [signing_salt: "vNk6HzXn"]
+
+config :craftplan, Oban,
+  engine: Oban.Engines.Basic,
+  repo: Craftplan.Repo,
+  testing: :manual,
+  plugins: [
+    Oban.Plugins.Pruner,
+    {Oban.Plugins.Cron,
+     crontab: [
+       # {"0 * * * *", Framework.Workers.Hourly}
+     ]}
+  ],
+  queues: [
+    default: 10
+  ]
 
 config :craftplan,
   ecto_repos: [Craftplan.Repo],
@@ -63,6 +80,16 @@ config :esbuild,
   ]
 
 config :ex_cldr, default_backend: Craftplan.Cldr
+
+config :ex_money,
+  open_exchange_rates_app_id: {:system, "OPEN_EXCHANGE_RATES_APP_ID"},
+  exchange_rates_retrieve_every: 300_000,
+  api_module: Money.ExchangeRates.OpenExchangeRates,
+  callback_module: Money.ExchangeRates.Callback,
+  exchange_rates_cache_module: Money.ExchangeRates.Cache.Ets,
+  json_library: Jason,
+  default_cldr_backend: Craftplan.Cldr,
+  auto_start_exchange_rate_service: true
 
 # Configures Elixir's Logger
 config :logger, :console,

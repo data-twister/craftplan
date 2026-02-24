@@ -7,6 +7,8 @@ defmodule Craftplan.Application do
 
   @impl true
   def start(_type, _args) do
+    oban_params = Application.fetch_env!(:craftplan, Oban)
+
     children = [
       CraftplanWeb.Telemetry,
       Craftplan.Vault,
@@ -15,6 +17,7 @@ defmodule Craftplan.Application do
       {Phoenix.PubSub, name: Craftplan.PubSub},
       # Start the Finch HTTP client for sending emails
       {Finch, name: Craftplan.Finch},
+      {Oban, oban_params},
       # Start a worker by calling: Craftplan.Worker.start_link(arg)
       # {Craftplan.Worker, arg},
       # Start to serve requests, typically the last entry
