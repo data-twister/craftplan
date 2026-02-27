@@ -1,5 +1,5 @@
 # seeds.exs
-
+alias AshAuthentication.Strategy.Password
 alias Craftplan.Accounts
 alias Craftplan.Catalog
 alias Craftplan.CRM
@@ -113,10 +113,10 @@ if System.get_env("SEED_DATA") == "true" or (Code.ensure_loaded?(Mix) and Mix.en
   # 3. Seed necessary data
   # ------------------------------------------------------------------------------
 
-  seed_user = fn email, role ->
+  seed_org = fn email, role ->
     {:ok, user} =
       Accounts.User
-      |> Ash.Changeset.for_create(:register_with_password, %{
+      |> Ash.Changeset.for_create(:register_with_organization, %{
         email: email,
         password: "Aa123123123123",
         password_confirmation: "Aa123123123123",
@@ -124,7 +124,27 @@ if System.get_env("SEED_DATA") == "true" or (Code.ensure_loaded?(Mix) and Mix.en
       })
       |> Ash.create(
         context: %{
-          strategy: AshAuthentication.Strategy.Password,
+          strategy: Password,
+          private: %{ash_authentication?: true}
+        }
+      )
+
+    user
+  end
+
+  seed_user = fn email, role, organization ->
+    {:ok, user} =
+      Accounts.User
+      |> Ash.Changeset.for_create(:register_with_password, %{
+        email: email,
+        password: "Aa123123123123",
+        password_confirmation: "Aa123123123123",
+        role: role,
+        organization_id: organization.id
+      })
+      |> Ash.create(
+        context: %{
+          strategy: Password,
           private: %{ash_authentication?: true}
         }
       )
@@ -191,12 +211,13 @@ if System.get_env("SEED_DATA") == "true" or (Code.ensure_loaded?(Mix) and Mix.en
     lot
   end
 
-  seed_product = fn name, sku, price ->
+  seed_product = fn name, sku, price, organization ->
     Ash.Seed.seed!(Catalog.Product, %{
       name: name,
       sku: sku,
       status: :active,
-      price: Decimal.new(price)
+      price: Decimal.new(price),
+      organization_id: organization.id
     })
   end
 
@@ -257,11 +278,12 @@ if System.get_env("SEED_DATA") == "true" or (Code.ensure_loaded?(Mix) and Mix.en
   # Note: PurchaseOrder.create defaults status to :draft in the resource. For seeds we
   # still accept a `status` argument for readability, then update the PO accordingly so
   # the final state matches the scenario we want to illustrate (e.g. :ordered).
-  seed_purchase_order = fn supplier, status ->
+  seed_purchase_order = fn supplier, status, organization ->
     po =
       Ash.Seed.seed!(Inventory.PurchaseOrder, %{
         supplier_id: supplier.id,
-        ordered_at: DateTime.utc_now()
+        ordered_at: DateTime.utc_now(),
+        organization_id: organization.id
       })
 
     case status do
@@ -282,7 +304,7 @@ if System.get_env("SEED_DATA") == "true" or (Code.ensure_loaded?(Mix) and Mix.en
     })
   end
 
-  seed_customer = fn first_name, last_name, email, phone, address_map ->
+  seed_customer = fn first_name, last_name, email, phone, address_map, organization ->
     Ash.Seed.seed!(CRM.Customer, %{
       type: :individual,
       first_name: first_name,
@@ -290,16 +312,18 @@ if System.get_env("SEED_DATA") == "true" or (Code.ensure_loaded?(Mix) and Mix.en
       email: email,
       phone: phone,
       billing_address: address_map,
-      shipping_address: address_map
+      shipping_address: address_map,
+      organization_id: organization.id
     })
   end
 
-  seed_order = fn customer, delivery_in_days, status, payment_status ->
+  seed_order = fn customer, delivery_in_days, status, payment_status, organization ->
     Ash.Seed.seed!(Orders.Order, %{
       customer_id: customer.id,
       delivery_date: DateTime.add(DateTime.utc_now(), delivery_in_days, :day),
       status: status,
-      payment_status: payment_status
+      payment_status: payment_status,
+      organization_id: organization.id
     })
   end
 
@@ -314,9 +338,17 @@ if System.get_env("SEED_DATA") == "true" or (Code.ensure_loaded?(Mix) and Mix.en
   end
 
   # -- 3.1 Create users
-  _admin_user = seed_user.("test@test.com", :admin)
-  _staff_user = seed_user.("staff@staff.com", :staff)
-  _customer_user = seed_user.("customer@customer.com", :customer)
+  org_owner = seed_org.("test@test.com", :owner)
+
+  {:ok, user} =
+    Craftplan.Accounts.User
+    |> Ash.get!(org_owner.id, authorize?: false)
+    |> Ash.load(:organization, authorize?: false)
+
+  tenant = user.organization
+  _admin_user = seed_user.("admin@test.com", :admin, tenant)
+  _staff_user = seed_user.("staff@staff.com", :staff, tenant)
+  _customer_user = seed_user.("customer@customer.com", :customer, tenant)
 
   # -- 3.2 Set up global bakery settings
   Ash.Seed.seed!(Settings.Settings, %{
@@ -440,11 +472,11 @@ if System.get_env("SEED_DATA") == "true" or (Code.ensure_loaded?(Mix) and Mix.en
     dairy: seed_supplier.("Fresh Dairy Ltd.", "sales@dairy.test")
   }
 
-  po1 = seed_purchase_order.(suppliers.miller, :ordered)
+  po1 = seed_purchase_order.(suppliers.miller, :ordered, tenant)
   seed_purchase_order_item.(po1, materials.flour, "10000", "0.0018")
   seed_purchase_order_item.(po1, materials.whole_wheat, "5000", "0.0027")
 
-  po2 = seed_purchase_order.(suppliers.dairy, :ordered)
+  po2 = seed_purchase_order.(suppliers.dairy, :ordered, tenant)
   seed_purchase_order_item.(po2, materials.butter, "2000", "0.009")
   seed_purchase_order_item.(po2, materials.milk, "5000", "0.0025")
 
@@ -489,16 +521,16 @@ if System.get_env("SEED_DATA") == "true" or (Code.ensure_loaded?(Mix) and Mix.en
 
   # -- 3.9 Seed products
   products = %{
-    almond_cookies: seed_product.("Almond Cookies", "COOK-001", "3.99"),
-    choc_cake: seed_product.("Chocolate Cake", "CAKE-001", "15.99"),
-    bread: seed_product.("Artisan Bread", "BREAD-001", "4.99"),
-    muffins: seed_product.("Blueberry Muffins", "MUF-001", "2.99"),
-    croissants: seed_product.("Butter Croissants", "PAST-001", "2.50"),
-    gf_cupcakes: seed_product.("Gluten-Free Cupcakes", "CUP-001", "3.49"),
-    rye_loaf: seed_product.("Rye Loaf Bread", "BREAD-002", "5.49"),
-    carrot_cake: seed_product.("Carrot Cake", "CAKE-002", "12.99"),
-    oatmeal_cookies: seed_product.("Oatmeal Cookies", "COOK-002", "3.49"),
-    cheese_danish: seed_product.("Cheese Danish", "PAST-002", "2.99")
+    almond_cookies: seed_product.("Almond Cookies", "COOK-001", "3.99", tenant),
+    choc_cake: seed_product.("Chocolate Cake", "CAKE-001", "15.99", tenant),
+    bread: seed_product.("Artisan Bread", "BREAD-001", "4.99", tenant),
+    muffins: seed_product.("Blueberry Muffins", "MUF-001", "2.99", tenant),
+    croissants: seed_product.("Butter Croissants", "PAST-001", "2.50", tenant),
+    gf_cupcakes: seed_product.("Gluten-Free Cupcakes", "CUP-001", "3.49", tenant),
+    rye_loaf: seed_product.("Rye Loaf Bread", "BREAD-002", "5.49", tenant),
+    carrot_cake: seed_product.("Carrot Cake", "CAKE-002", "12.99", tenant),
+    oatmeal_cookies: seed_product.("Oatmeal Cookies", "COOK-002", "3.49", tenant),
+    cheese_danish: seed_product.("Cheese Danish", "PAST-002", "2.99", tenant)
   }
 
   # Set product availability and per-day capacity to try the feature
@@ -537,7 +569,8 @@ if System.get_env("SEED_DATA") == "true" or (Code.ensure_loaded?(Mix) and Mix.en
           state: "IL",
           zip: "12345",
           country: "USA"
-        }
+        },
+        tenant
       ),
     jane:
       seed_customer.(
@@ -551,7 +584,8 @@ if System.get_env("SEED_DATA") == "true" or (Code.ensure_loaded?(Mix) and Mix.en
           state: "OR",
           zip: "97201",
           country: "USA"
-        }
+        },
+        tenant
       ),
     bob:
       seed_customer.(
@@ -565,7 +599,8 @@ if System.get_env("SEED_DATA") == "true" or (Code.ensure_loaded?(Mix) and Mix.en
           state: "WA",
           zip: "98101",
           country: "USA"
-        }
+        },
+        tenant
       ),
     alice:
       seed_customer.(
@@ -579,7 +614,8 @@ if System.get_env("SEED_DATA") == "true" or (Code.ensure_loaded?(Mix) and Mix.en
           state: "CO",
           zip: "80203",
           country: "USA"
-        }
+        },
+        tenant
       ),
     michael:
       seed_customer.(
@@ -593,7 +629,8 @@ if System.get_env("SEED_DATA") == "true" or (Code.ensure_loaded?(Mix) and Mix.en
           state: "AZ",
           zip: "85001",
           country: "USA"
-        }
+        },
+        tenant
       ),
     grace:
       seed_customer.(
@@ -607,7 +644,8 @@ if System.get_env("SEED_DATA") == "true" or (Code.ensure_loaded?(Mix) and Mix.en
           state: "TX",
           zip: "73301",
           country: "USA"
-        }
+        },
+        tenant
       ),
     taylor:
       seed_customer.(
@@ -621,7 +659,8 @@ if System.get_env("SEED_DATA") == "true" or (Code.ensure_loaded?(Mix) and Mix.en
           state: "MA",
           zip: "02215",
           country: "USA"
-        }
+        },
+        tenant
       ),
     emily:
       seed_customer.(
@@ -635,7 +674,8 @@ if System.get_env("SEED_DATA") == "true" or (Code.ensure_loaded?(Mix) and Mix.en
           state: "IL",
           zip: "60601",
           country: "USA"
-        }
+        },
+        tenant
       )
   }
 
@@ -645,7 +685,8 @@ if System.get_env("SEED_DATA") == "true" or (Code.ensure_loaded?(Mix) and Mix.en
       customer_id: customers.john.id,
       delivery_date: DateTime.utc_now(),
       status: :confirmed,
-      payment_status: :pending
+      payment_status: :pending,
+      organization_id: tenant.id
     })
 
   bread_item1 =
@@ -662,7 +703,8 @@ if System.get_env("SEED_DATA") == "true" or (Code.ensure_loaded?(Mix) and Mix.en
       customer_id: customers.jane.id,
       delivery_date: DateTime.utc_now(),
       status: :confirmed,
-      payment_status: :pending
+      payment_status: :pending,
+      organization_id: tenant.id
     })
 
   bread_item2 =
@@ -759,8 +801,8 @@ if System.get_env("SEED_DATA") == "true" or (Code.ensure_loaded?(Mix) and Mix.en
 
   # C) New products
   new_products = %{
-    sesame_bagel: seed_product.("Sesame Bagel", "BAGEL-001", "2.25"),
-    pb_cookies: seed_product.("Peanut Butter Cookies", "COOK-003", "3.79")
+    sesame_bagel: seed_product.("Sesame Bagel", "BAGEL-001", "2.25", tenant),
+    pb_cookies: seed_product.("Peanut Butter Cookies", "COOK-003", "3.79", tenant)
   }
 
   products = Map.merge(products, new_products)

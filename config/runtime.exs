@@ -168,6 +168,9 @@ if config_env() == :prod do
       config :craftplan, Craftplan.Mailer, adapter: Swoosh.Adapters.Logger
   end
 
+  config :sentry,
+    dsn: System.get_env("SENTRY_DSN") || ""
+
   # ## SSL Support
   #
   # To get SSL working, you will need to add the `https` key

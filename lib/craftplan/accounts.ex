@@ -4,6 +4,7 @@ defmodule Craftplan.Accounts do
 
   resources do
     resource Craftplan.Accounts.Token
+    resource Craftplan.Accounts.Organization
 
     resource Craftplan.Accounts.User do
       define :get_user_by_email, args: [:email], action: :get_by_email
@@ -18,5 +19,7 @@ defmodule Craftplan.Accounts do
       define :touch_api_key_last_used, action: :touch_last_used
       define :get_api_key_by_id, action: :read, get_by: [:id]
     end
+
+    resource Craftplan.Accounts.Membership
   end
 end

@@ -46,6 +46,10 @@ defmodule Craftplan.Orders.OrderItemBatchAllocation do
       authorize_if expr(^actor(:role) in [:staff, :admin])
     end
 
+    policy action_type([:create, :read, :update, :destroy]) do
+      forbid_unless Craftplan.Accounts.Checks.ActorBelongsToTenant
+    end
+
     policy action_type([:create, :update, :destroy]) do
       authorize_if expr(^actor(:role) in [:staff, :admin])
     end
@@ -60,6 +64,10 @@ defmodule Craftplan.Orders.OrderItemBatchAllocation do
 
     # Guard rail: total planned across all allocations for an item cannot exceed item quantity
     validate {Craftplan.Orders.Validations.AllocationWithinItemQuantity, []}
+  end
+
+  multitenancy do
+    strategy :context
   end
 
   attributes do

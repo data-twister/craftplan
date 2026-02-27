@@ -16,7 +16,8 @@ config :craftplan, Craftplan.Repo,
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
-  pool_size: 10
+  pool_size: 10,
+  port: 55_432
 
 config :craftplan, Craftplan.Vault,
   ciphers: [
@@ -49,6 +50,7 @@ config :craftplan, CraftplanWeb.Endpoint,
   secret_key_base: "NlbIq9/9aO9+5xxg8ESxxFI7ay172FlEI5IVJvhLx50ZcZbWLjV1L1ito7aZ0fiM",
   watchers: [
     esbuild: {Esbuild, :install_and_run, [:craftplan, ~w(--sourcemap=inline --watch)]},
+    esbuild_service_worker: {Esbuild, :install_and_run, [:service_worker, ~w(--sourcemap=inline --watch)]},
     tailwind: {Tailwind, :install_and_run, [:craftplan, ~w(--watch)]}
   ]
 
@@ -100,6 +102,9 @@ config :phoenix_live_view,
   debug_heex_annotations: true,
   # Enable helpful, but potentially expensive runtime checks
   enable_expensive_runtime_checks: true
+
+config :sentry,
+  dsn: System.get_env("SENTRY_DSN") || ""
 
 config :swoosh, :api_client, false
 

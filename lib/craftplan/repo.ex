@@ -16,4 +16,13 @@ defmodule Craftplan.Repo do
   def min_pg_version do
     %Version{major: 16, minor: 0, patch: 0}
   end
+
+  @doc """
+  Used by migrations --tenants to list all tenants, create related schemas, and migrate them.
+  """
+  def all_tenants do
+    for tenant <- Ash.read!(Craftplan.Accounts.Org) do
+      tenant.slug
+    end
+  end
 end

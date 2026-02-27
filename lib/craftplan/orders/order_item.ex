@@ -9,6 +9,14 @@ defmodule Craftplan.Orders.OrderItem do
 
   alias Craftplan.Orders.Changes.AssignBatchCodeAndCost
 
+  @plan_load [
+    :quantity,
+    :planned_qty_sum,
+    :completed_qty_sum,
+    product: [:name, :sku],
+    order: [:reference, :delivery_date, customer: [:full_name]]
+  ]
+
   json_api do
     type "order-item"
 
@@ -39,14 +47,6 @@ defmodule Craftplan.Orders.OrderItem do
     table "orders_items"
     repo Craftplan.Repo
   end
-
-  @plan_load [
-    :quantity,
-    :planned_qty_sum,
-    :completed_qty_sum,
-    product: [:name, :sku],
-    order: [:reference, :delivery_date, customer: [:full_name]]
-  ]
 
   actions do
     defaults [:read, :destroy]
@@ -124,6 +124,10 @@ defmodule Craftplan.Orders.OrderItem do
       authorize_if {Craftplan.Accounts.Checks.ApiScopeCheck, []}
     end
 
+    policy action_type([:create, :read, :update, :destroy]) do
+      forbid_unless Craftplan.Accounts.Checks.ActorBelongsToTenant
+    end
+
     # Public read allowed for `:in_range` (capacity checks)
     bypass action(:in_range) do
       authorize_if always()
@@ -137,6 +141,10 @@ defmodule Craftplan.Orders.OrderItem do
     policy action_type([:create, :update, :destroy]) do
       authorize_if expr(^actor(:role) in [:staff, :admin])
     end
+  end
+
+  multitenancy do
+    strategy :context
   end
 
   attributes do

@@ -32,6 +32,10 @@ defmodule Craftplan.Catalog.BOMRollup do
     end
   end
 
+  multitenancy do
+    strategy :context
+  end
+
   attributes do
     uuid_primary_key :id
 

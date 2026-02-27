@@ -61,6 +61,10 @@ defmodule Craftplan.Inventory.Supplier do
       authorize_if {Craftplan.Accounts.Checks.ApiScopeCheck, []}
     end
 
+    policy action_type([:create, :read, :update, :destroy]) do
+      forbid_unless Craftplan.Accounts.Checks.ActorBelongsToTenant
+    end
+
     policy action_type(:read) do
       authorize_if expr(^actor(:role) in [:staff, :admin])
     end
@@ -68,6 +72,10 @@ defmodule Craftplan.Inventory.Supplier do
     policy action_type([:create, :update, :destroy]) do
       authorize_if expr(^actor(:role) in [:staff, :admin])
     end
+  end
+
+  multitenancy do
+    strategy :context
   end
 
   attributes do

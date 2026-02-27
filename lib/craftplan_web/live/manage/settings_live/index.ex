@@ -46,6 +46,17 @@ defmodule CraftplanWeb.SettingsLive.Index do
         </div>
       </div>
 
+      <div :if={@live_action == :organizations}>
+        <div>
+          <.live_component
+            module={CraftplanWeb.SettingsLive.OrganizationsComponent}
+            id="organizations-component"
+            current_user={@current_user}
+            organizations={@organizations}
+          />
+        </div>
+      </div>
+
       <div :if={@live_action == :nutritional_facts}>
         <div>
           <.live_component
@@ -175,10 +186,12 @@ defmodule CraftplanWeb.SettingsLive.Index do
     settings = Settings.get_by_id!(socket.assigns.settings.id)
     allergens = Inventory.list_allergens!()
     nutritional_facts = Inventory.list_nutritional_facts!()
+    organizations = []
 
     socket =
       socket
       |> assign(:settings, settings)
+      |> assign(:organizations, organizations)
       |> assign(:allergens, allergens)
       |> assign(:nutritional_facts, nutritional_facts)
       |> assign(:csv_form, to_form(%{}))
@@ -246,6 +259,10 @@ defmodule CraftplanWeb.SettingsLive.Index do
     assign(socket, :page_title, "Calendar Feed")
   end
 
+  defp apply_action(socket, :organizations, _params) do
+    assign(socket, :page_title, "Organizations")
+  end
+
   def csv_import_entities do
     [
       %{
@@ -275,6 +292,8 @@ defmodule CraftplanWeb.SettingsLive.Index do
   defp settings_trail(:general), do: [Navigation.root(:settings), Navigation.page(:settings, :general)]
 
   defp settings_trail(:allergens), do: [Navigation.root(:settings), Navigation.page(:settings, :allergens)]
+
+  defp settings_trail(:organizations), do: [Navigation.root(:settings), Navigation.page(:settings, :organizations)]
 
   defp settings_trail(:nutritional_facts),
     do: [Navigation.root(:settings), Navigation.page(:settings, :nutritional_facts)]

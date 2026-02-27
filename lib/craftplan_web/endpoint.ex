@@ -12,8 +12,8 @@ defmodule CraftplanWeb.Endpoint do
   ]
 
   socket "/live", Phoenix.LiveView.Socket,
-    websocket: [connect_info: [session: @session_options]],
-    longpoll: [connect_info: [session: @session_options]]
+    websocket: [connect_info: [session: {__MODULE__, :session_opts, []}]],
+    longpoll: [connect_info: [session: {__MODULE__, :session_opts, []}]]
 
   # Serve at "/" the static files from "priv/static" directory.
   #
@@ -23,7 +23,8 @@ defmodule CraftplanWeb.Endpoint do
     at: "/",
     from: :craftplan,
     gzip: false,
-    only: CraftplanWeb.static_paths()
+    only: CraftplanWeb.static_paths(),
+    headers: {__MODULE__, :static_headers, []}
 
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.
@@ -46,11 +47,91 @@ defmodule CraftplanWeb.Endpoint do
     pass: ["*/*"],
     json_decoder: Phoenix.json_library()
 
+  plug Sentry.PlugContext
+
   plug Plug.MethodOverride
   plug Plug.Head
-  plug Plug.Session, @session_options
+  plug :session
+  plug :health
+  plug :version
   plug CORSPlug
   # Enable Ecto SQL Sandbox for LiveView tests to share the DB connection
   # SQL Sandbox plug not needed with LiveViewTest server: false
   plug CraftplanWeb.Router
+
+  def session(conn, _opts) do
+    opts = session_opts()
+    Plug.Session.call(conn, Plug.Session.init(opts))
+  end
+
+  def session_opts do
+    Keyword.put(@session_options, :domain, CraftplanWeb.Endpoint.host())
+  end
+
+  def health(conn, _) do
+    case conn do
+      %{request_path: "/health"} -> conn |> send_resp(200, "OK") |> halt()
+      _ -> conn
+    end
+  end
+
+  def version(conn, _) do
+    case conn do
+      %{request_path: "/version"} ->
+        data = Craftplan.Application.version() |> Map.new() |> Jason.encode!()
+        conn |> put_resp_content_type("application/json") |> send_resp(200, data) |> halt()
+
+      %{request_path: "/version/build"} ->
+        [app: name] = Craftplan.Application.name()
+        [version: version] = Craftplan.Application.version()
+        [description: description] = Craftplan.Application.description()
+        [build_date: build_date] = Craftplan.Application.build_date()
+        [build_hash: build_hash] = Craftplan.Application.build_hash()
+
+        data =
+          Map.new()
+          |> Map.put(:application, %{
+            name: name,
+            version: version,
+            description: description,
+            date: build_date,
+            revision: build_hash
+          })
+          |> Map.put(:runtime, System.build_info())
+          |> Jason.encode!()
+
+        conn |> put_resp_content_type("application/json") |> send_resp(200, data) |> halt()
+
+      _ ->
+        conn
+    end
+  end
+
+  def static_headers(conn) do
+    case conn.request_path do
+      "/assets/serviceworker.js" -> [{"Service-Worker-Allowed", "/"}]
+      _ -> []
+    end
+  end
+
+  #  def content_security_policy(conn, _opts) do
+  #    [_, url_host] = String.split(CraftplanWeb.Endpoint.url(), "://", parts: 2)
+  #
+  #     ContentSecurityPolicy.Plug.Setup.call(conn,
+  #      default_policy: %ContentSecurityPolicy.Policy{
+  #        default_src: ["'self'"],
+  #        script_src: ["'self'"],
+  #        connect_src: ["'self'", "wss:"],
+  #        style_src: ["'self'", "'unsafe-inline'"],
+  #        img_src: ["'self'", "data:"],
+  #        font_src: ["'self'"],
+  #        form_action: [
+  #          "'self'",
+  #          # Allow directing to subdomains
+  #          "*.#{url_host}"
+  #        ],
+  #        frame_ancestors: ["'none'"]
+  #      }
+  #    )
+  #  end
 end

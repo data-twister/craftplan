@@ -9,6 +9,8 @@ defmodule Craftplan.Accounts.User do
 
   alias AshAuthentication.Strategy.Password.HashPasswordChange
   alias AshAuthentication.Strategy.Password.PasswordConfirmationValidation
+  alias Craftplan.Accounts.Membership
+  alias Craftplan.Accounts.Organization
 
   authentication do
     tokens do
@@ -113,6 +115,54 @@ defmodule Craftplan.Accounts.User do
       end
     end
 
+    create :register_with_organization do
+      description "Register a new user + organization with a email and password."
+
+      argument :email, :ci_string do
+        allow_nil? false
+      end
+
+      argument :role, :atom do
+        default :customer
+      end
+
+      argument :password, :string do
+        description "The proposed password for the user, in plain text."
+        allow_nil? false
+        constraints min_length: 8
+        sensitive? true
+      end
+
+      argument :password_confirmation, :string do
+        description "The proposed password for the user (again), in plain text."
+        allow_nil? false
+        sensitive? true
+      end
+
+      change set_context(%{strategy_name: :password})
+
+      # Sets the email from the argument
+      change set_attribute(:email, arg(:email))
+
+      change set_attribute(:role, arg(:role))
+
+      # Hashes the provided password
+      change HashPasswordChange
+
+      change Craftplan.Accounts.Changes.RegisterUser
+
+      # Generates an authentication token for the user
+      change AshAuthentication.GenerateTokenChange
+
+      # validates that the password matches the confirmation
+      validate PasswordConfirmationValidation
+
+      metadata :token, :string do
+        description "A JWT that can be used to authenticate the user."
+        allow_nil? false
+      end
+    end
+
     create :register_with_password do
       description "Register a new user with a email and password."
 
@@ -137,10 +187,17 @@ defmodule Craftplan.Accounts.User do
         sensitive? true
       end
 
+      argument :organization_id, :uuid do
+        description "The organization the user belongs to."
+        allow_nil? true
+      end
+
       # Sets the email from the argument
       change set_attribute(:email, arg(:email))
 
       change set_attribute(:role, arg(:role))
+
+      change set_attribute(:organization_id, arg(:organization_id))
 
       # Hashes the provided password
       change HashPasswordChange
@@ -217,9 +274,27 @@ defmodule Craftplan.Accounts.User do
       authorize_if always()
     end
 
+    policy action_type([:create, :read, :update, :destroy]) do
+      forbid_unless Craftplan.Accounts.Checks.ActorBelongsToTenant
+    end
+
     policy always() do
       forbid_if always()
     end
+  end
+
+  preparations do
+    prepare build(
+              load: [
+                :organization
+              ]
+            )
+  end
+
+  multitenancy do
+    strategy :attribute
+    attribute :organization_id
+    global? true
   end
 
   attributes do
@@ -242,7 +317,24 @@ defmodule Craftplan.Accounts.User do
     end
   end
 
+  relationships do
+    belongs_to :organization, Organization do
+      allow_nil? true
+    end
+
+    has_many :memberships, Membership do
+      public? true
+    end
+
+    many_to_many :organizations, Organization do
+      through Membership
+      source_attribute_on_join_resource :organization_id
+      destination_attribute_on_join_resource :user_id
+      public? true
+    end
+  end
+
   identities do
-    identity :unique_email, [:email]
+    identity :unique_email, [:email], all_tenants?: true
   end
 end

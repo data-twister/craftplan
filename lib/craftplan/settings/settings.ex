@@ -7,6 +7,7 @@ defmodule Craftplan.Settings.Settings do
     authorizers: [Ash.Policy.Authorizer],
     extensions: [AshJsonApi.Resource]
 
+  alias Craftplan.Accounts.Organization
   alias Craftplan.Types.EncryptedBinary
 
   json_api do
@@ -30,7 +31,8 @@ defmodule Craftplan.Settings.Settings do
     defaults [:read, :update]
 
     create :init do
-      accept []
+      primary? true
+      accept [:organization_id]
     end
 
     read :get do
@@ -58,6 +60,12 @@ defmodule Craftplan.Settings.Settings do
     policy action_type([:update, :destroy]) do
       authorize_if expr(^actor(:role) in [:admin])
     end
+  end
+
+  multitenancy do
+    strategy :attribute
+    attribute :organization_id
+    global? true
   end
 
   attributes do
@@ -276,6 +284,12 @@ defmodule Craftplan.Settings.Settings do
       default 14
       constraints min: 7, max: 90
       description "Default forecast horizon in days for the reorder planner."
+    end
+  end
+
+  relationships do
+    belongs_to :organization, Organization do
+      allow_nil? true
     end
   end
 end

@@ -13,7 +13,7 @@ defmodule CraftplanWeb.SetupLive do
        |> redirect(to: ~p"/sign-in")}
     else
       form =
-        AshPhoenix.Form.for_create(User, :register_with_password,
+        AshPhoenix.Form.for_create(User, :register_with_organization,
           as: "user",
           authorize?: false
         )

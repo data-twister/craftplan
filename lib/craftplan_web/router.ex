@@ -15,7 +15,8 @@ defmodule CraftplanWeb.Router do
            "frame-ancestors 'self'",
            "img-src 'self' data: blob:",
            "style-src 'self' 'unsafe-inline'",
-           "font-src 'self' data:",
+           "font-src 'self' data: https://rsms.me",
+           "style-src-elem 'self' https://rsms.me",
            "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
            "connect-src 'self' ws: wss:"
          ],
@@ -25,6 +26,14 @@ defmodule CraftplanWeb.Router do
   def put_session_timezone(conn, _opts) do
     timezone = conn.cookies["timezone"]
     put_session(conn, "timezone", timezone)
+  end
+
+  pipeline :require_user do
+    plug CraftplanWeb.EnsureAuthenticated, user_required: true, tenant_required: false
+  end
+
+  pipeline :require_tenant do
+    plug CraftplanWeb.EnsureAuthenticated, user_required: true, tenant_required: true
   end
 
   #
@@ -41,6 +50,13 @@ defmodule CraftplanWeb.Router do
     plug :put_csp
     plug :load_from_session
     plug :put_session_timezone
+    # Set :current_tenant based on user and subdomain
+    plug CraftplanWeb.SetTenant
+    # plug :put_content_security_policy, &CraftplanWeb.CSP.policy/1
+
+    #    plug :put_content_security_policy,
+    #         img_src: "'self' data:",
+    #         style_src: "'self' 'nonce'"
   end
 
   pipeline :api do
@@ -102,6 +118,7 @@ defmodule CraftplanWeb.Router do
         CraftplanWeb.LiveSettings,
         CraftplanWeb.LiveCommandPalette,
         {CraftplanWeb.LiveUserAuth, :live_admin_required}
+        #       {CraftplanWeb.LiveUserAuth, :live_tenant_required}
       ] do
       # Settings Routes
       live "/manage/settings", SettingsLive.Index, :index
@@ -111,6 +128,7 @@ defmodule CraftplanWeb.Router do
       live "/manage/settings/csv", SettingsLive.Index, :csv
       live "/manage/settings/api_keys", SettingsLive.Index, :api_keys
       live "/manage/settings/calendar", SettingsLive.Index, :calendar_feed
+      live "/manage/settings/organizations", SettingsLive.Index, :organizations
     end
 
     # CSV Export (regular controller, not LiveView)
@@ -128,6 +146,7 @@ defmodule CraftplanWeb.Router do
         CraftplanWeb.LiveSettings,
         CraftplanWeb.LiveCommandPalette,
         {CraftplanWeb.LiveUserAuth, :live_staff_required}
+        #       {CraftplanWeb.LiveUserAuth, :live_tenant_required}
       ] do
       # Products
       live "/manage/products", ProductLive.Index, :index
@@ -223,6 +242,12 @@ defmodule CraftplanWeb.Router do
     get "/feed.ics", CraftplanWeb.CalendarController, :feed
   end
 
+  scope "/", CraftplanWeb do
+    pipe_through [:browser, :require_user]
+
+    post "/organizations", OrganizationController, :choose
+  end
+
   #
   # Development Routes
   #
@@ -254,5 +279,25 @@ defmodule CraftplanWeb.Router do
   # Phoenix 1.8 secures defaults in `put_secure_browser_headers`. We provide an
   # explicit CSP compatible with LiveView, topbar, and dev websocket connections.
   # Tighten as needed for your deployment.
-  defp put_csp(conn, _opts), do: Plug.Conn.put_resp_header(conn, "content-security-policy", @csp)
+  defp put_csp(conn, _opts) do
+    Plug.Conn.put_resp_header(conn, "content-security-policy", @csp)
+
+    #   [_, url_host] = String.split(CraftplanWeb.Endpoint.url(), "://", parts: 2)
+    #    csp =
+    #      Enum.join(
+    #        [
+    #          "default-src 'self'",
+    #          "base-uri 'self'",
+    #          "frame-ancestors 'self'",
+    #          "img-src 'self' data: blob:",
+    #          "style-src 'self' 'unsafe-inline'",
+    #          "font-src 'self' data:",
+    #          "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+    #          "connect-src 'self' ws: wss:"
+    #        ],
+    #        "; "
+    #      )
+    #
+    #    Plug.Conn.put_resp_header(conn, "content-security-policy", csp)
+  end
 end

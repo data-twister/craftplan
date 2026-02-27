@@ -58,6 +58,8 @@ defmodule CraftplanWeb do
 
       alias CraftplanWeb.Navigation
 
+      on_mount Sentry.LiveViewHook
+
       unquote(html_helpers())
     end
   end

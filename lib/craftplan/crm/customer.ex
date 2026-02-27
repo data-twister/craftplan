@@ -83,6 +83,10 @@ defmodule Craftplan.CRM.Customer do
       authorize_if always()
     end
 
+    policy action_type([:create, :read, :update, :destroy]) do
+      forbid_unless Craftplan.Accounts.Checks.ActorBelongsToTenant
+    end
+
     # Allow only targeted email lookup publicly
     policy action(:get_by_email) do
       authorize_if always()
@@ -101,6 +105,10 @@ defmodule Craftplan.CRM.Customer do
     policy action_type(:destroy) do
       authorize_if expr(^actor(:role) in [:staff, :admin])
     end
+  end
+
+  multitenancy do
+    strategy :context
   end
 
   attributes do

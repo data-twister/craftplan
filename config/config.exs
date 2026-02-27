@@ -60,6 +60,11 @@ config :esbuild,
     args: ~w(js/app.js --bundle --target=es2016 --outdir=../priv/static/assets),
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => [Path.expand("../deps", __DIR__), Mix.Project.build_path()]}
+  ],
+  service_worker: [
+    args: ~w(js/service_worker.js --bundle --target=es2016 --outdir=../priv/static/assets),
+    cd: Path.expand("../assets", __DIR__),
+    env: %{"NODE_PATH" => [Path.expand("../deps", __DIR__), Mix.Project.build_path()]}
   ]
 
 config :ex_cldr, default_backend: Craftplan.Cldr
@@ -69,8 +74,29 @@ config :logger, :console,
   format: "$time $metadata[$level] $message\n",
   metadata: [:request_id]
 
+config :nanoid,
+  size: 8,
+  alphabet: "_-0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
+
+config :sentry,
+  dsn: "https://examplePublicKey@o0.ingest.sentry.io/0",
+  environment_name: Mix.env(),
+  enable_source_code_context: true,
+  root_source_code_paths: [File.cwd!()],
+  integrations: [
+    oban: [
+      # Capture errors:
+      capture_errors: true,
+      # Monitor cron jobs:
+      cron: [enabled: true]
+    ],
+    telemetry: [
+      report_handler_failures: true
+    ]
+  ]
 
 config :spark,
   formatter: [
