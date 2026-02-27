@@ -31,6 +31,14 @@ defmodule Craftplan.Inventory.MaterialAllergen do
     end
   end
 
+  preparations do
+    prepare Craftplan.Preparations.SetTenant
+  end
+
+  changes do
+    change Craftplan.Changes.SetTenant
+  end
+
   relationships do
     belongs_to :material, Craftplan.Inventory.Material, primary_key?: true, allow_nil?: false
     belongs_to :allergen, Craftplan.Inventory.Allergen, primary_key?: true, allow_nil?: false

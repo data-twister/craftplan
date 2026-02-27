@@ -9,6 +9,14 @@ defmodule Craftplan.CRM.Address do
     defaults [:read, :create, :update, :destroy]
   end
 
+  preparations do
+    prepare Craftplan.Preparations.SetTenant
+  end
+
+  changes do
+    change Craftplan.Changes.SetTenant
+  end
+
   validations do
     validate present([:street, :city, :country], at_least: 1)
   end

@@ -4,6 +4,7 @@ defmodule CraftplanWeb.AuthController do
 
   def success(conn, activity, user, _token) do
     return_to = get_session(conn, :return_to) || ~p"/manage/overview"
+    IO.inspect(return_to, label: "return_to")
 
     message =
       case activity do

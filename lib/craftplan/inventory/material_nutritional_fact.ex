@@ -31,6 +31,14 @@ defmodule Craftplan.Inventory.MaterialNutritionalFact do
     end
   end
 
+  preparations do
+    prepare Craftplan.Preparations.SetTenant
+  end
+
+  changes do
+    change Craftplan.Changes.SetTenant
+  end
+
   attributes do
     attribute :amount, :decimal do
       public? true

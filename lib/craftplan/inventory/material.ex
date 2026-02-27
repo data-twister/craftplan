@@ -120,6 +120,14 @@ defmodule Craftplan.Inventory.Material do
     end
   end
 
+  preparations do
+    prepare Craftplan.Preparations.SetTenant
+  end
+
+  changes do
+    change Craftplan.Changes.SetTenant
+  end
+
   attributes do
     uuid_primary_key :id
 

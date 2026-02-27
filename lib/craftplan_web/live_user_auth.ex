@@ -26,7 +26,7 @@ defmodule CraftplanWeb.LiveUserAuth do
   def on_mount(:live_staff_required, _params, _session, socket) do
     current_user = socket.assigns[:current_user]
 
-    authorized? = current_user && current_user.role in [:staff, :admin]
+    authorized? = current_user && current_user.role in [:staff, :admin, :owner]
 
     if authorized? do
       {:cont, socket}
@@ -37,7 +37,7 @@ defmodule CraftplanWeb.LiveUserAuth do
 
   def on_mount(:live_admin_required, _params, _session, socket) do
     current_user = socket.assigns[:current_user]
-    authorized? = current_user && current_user.role in [:admin]
+    authorized? = current_user && current_user.role in [:admin, :owner]
 
     if authorized? do
       {:cont, socket}
@@ -51,6 +51,14 @@ defmodule CraftplanWeb.LiveUserAuth do
       {:halt, Phoenix.LiveView.redirect(socket, to: ~p"/")}
     else
       {:cont, assign(socket, :current_user, nil)}
+    end
+  end
+
+  def on_mount(:live_tenant_required, _params, _session, socket) do
+    if socket.assigns[:current_tenant] do
+      {:cont, socket}
+    else
+      {:halt, Phoenix.LiveView.redirect(socket, to: "/sign-in")}
     end
   end
 end

@@ -32,6 +32,18 @@ defmodule Craftplan.Catalog.BOMRollup do
     end
   end
 
+  preparations do
+    prepare Craftplan.Preparations.SetTenant
+  end
+
+  changes do
+    change Craftplan.Changes.SetTenant
+  end
+
+  multitenancy do
+    strategy :context
+  end
+
   attributes do
     uuid_primary_key :id
 

@@ -48,9 +48,25 @@ defmodule Craftplan.Inventory.PurchaseOrderItem do
       authorize_if expr(^actor(:role) in [:staff, :admin])
     end
 
+    policy action_type([:create, :read, :update, :destroy]) do
+      forbid_unless Craftplan.Accounts.Checks.ActorBelongsToTenant
+    end
+
     policy action_type([:create, :update, :destroy]) do
       authorize_if expr(^actor(:role) in [:staff, :admin])
     end
+  end
+
+  preparations do
+    prepare Craftplan.Preparations.SetTenant
+  end
+
+  changes do
+    change Craftplan.Changes.SetTenant
+  end
+
+  multitenancy do
+    strategy :context
   end
 
   attributes do
