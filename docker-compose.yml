@@ -13,7 +13,7 @@
 
 services:
   craftplan:
-    image: ghcr.io/puemos/craftplan:latest
+    image: ghcr.io/data-twister/craftplan/craftplan
     ports:
       - "${PORT:-4000}:${PORT:-4000}"
     env_file: .env

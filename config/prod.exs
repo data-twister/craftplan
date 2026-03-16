@@ -15,5 +15,12 @@ config :craftplan, CraftplanWeb.Endpoint, cache_static_manifest: "priv/static/ca
 # Disable Swoosh Local Memory Storage
 config :logger, level: :info
 
+config :phoenix_distillery, PhoenixDistilleryWeb.Endpoint,
+  cache_static_manifest: "priv/static/cache_manifest.json",
+  # critical for Phoenix to run
+  server: true,
+  root: ".",
+  version: Application.spec(:phoenix_distillery, :vsn)
+
 config :swoosh, api_client: Swoosh.ApiClient.Finch, finch_name: Craftplan.Finch
 config :swoosh, local: false
