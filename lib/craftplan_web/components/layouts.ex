@@ -675,9 +675,7 @@ defmodule CraftplanWeb.Layouts do
     ~H"""
     <.link navigate={~p"/"} class="flex items-center gap-2">
       <img src="/images/logo.svg" alt="Logo" class="h-6 w-6" />
-      <span class="text-base font-semibold tracking-wide text-stone-800">
-
-      </span>
+      <span class="text-base font-semibold tracking-wide text-stone-800"></span>
     </.link>
     """
   end

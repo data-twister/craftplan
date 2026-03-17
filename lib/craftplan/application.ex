@@ -28,7 +28,6 @@ defmodule Craftplan.Application do
     result = Supervisor.start_link(children, opts)
 
     apply_smtp_from_settings()
-
     result
   end
 

@@ -60,7 +60,8 @@ if config_env() == :prod do
     # Handle traffic bursts - allow queries to queue longer before failing
     queue_target: 500,
     queue_interval: 1000,
-    database: "craftplan"
+    database: "craftplan",
+    start_apps_before_migration: [:logger]
 
   config :craftplan, CraftplanWeb.Endpoint,
     url: [host: host, port: 443, scheme: "https"],

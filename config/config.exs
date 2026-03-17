@@ -7,6 +7,8 @@
 # General application configuration
 import Config
 
+config :ash, :missed_notifications, :raise
+
 config :ash,
   include_embedded_source_by_default?: false,
   show_keysets_for_all_actions?: false,

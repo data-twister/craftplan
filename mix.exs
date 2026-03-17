@@ -11,7 +11,15 @@ defmodule Craftplan.MixProject do
       consolidate_protocols: Mix.env() != :dev,
       listeners: [Phoenix.CodeReloader],
       aliases: aliases(),
-      deps: deps()
+      deps: deps(),
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test,
+        "coveralls.cobertura": :test
+      ]
     ]
   end
 
@@ -21,7 +29,13 @@ defmodule Craftplan.MixProject do
   def application do
     [
       mod: {Craftplan.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :glific_phil_columns]
+    ]
+  end
+
+  def cli do
+    [
+      preferred_envs: [precommit: :test]
     ]
   end
 
@@ -90,7 +104,9 @@ defmodule Craftplan.MixProject do
       {:imprintor, "~> 0.5"},
       {:open_api_spex, "~> 3.16"},
       {:req, "~> 0.5", only: [:dev, :test]},
-      {:distillery, "~> 2.0"}
+      {:glific_phil_columns, github: "data-twister/phil_columns-ex"},
+      {:excoveralls, "~> 0.18.5"},
+      {:faker, "~> 0.18.0"}
     ]
   end
 
@@ -102,6 +118,7 @@ defmodule Craftplan.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
+      seed: ["phil_columns.seed"],
       setup: ["deps.get", "ash.setup", "assets.setup", "assets.build", "run priv/repo/seeds.exs"],
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
@@ -113,6 +130,7 @@ defmodule Craftplan.MixProject do
         "esbuild craftplan --minify",
         "phx.digest"
       ]
+      # precommit: ["compile --warnings-as-errors", "deps.unlock --unused", "format", "test"]
     ]
   end
 end

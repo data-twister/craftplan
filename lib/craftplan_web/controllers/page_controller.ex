@@ -14,7 +14,7 @@ defmodule CraftplanWeb.PageController do
 
         conn
         |> assign(:current_path, "/")
-        |> assign(:page_title, "Craftplan")
+        |> assign(:page_title, "")
         |> put_layout(false)
         |> render(:home, release_version: release_version)
       else
