@@ -674,9 +674,9 @@ defmodule CraftplanWeb.Layouts do
   defp logo_link(assigns) do
     ~H"""
     <.link navigate={~p"/"} class="flex items-center gap-2">
-      <img src="/images/logo.svg" alt="Craftplan Logo" class="h-6 w-6" />
+      <img src="/images/logo.svg" alt="Logo" class="h-6 w-6" />
       <span class="text-base font-semibold tracking-wide text-stone-800">
-        Craftplan
+
       </span>
     </.link>
     """
