@@ -7,6 +7,8 @@ defmodule CraftplanWeb.LiveUserAuth do
 
   import Phoenix.Component
 
+  require Logger
+
   def on_mount(:live_user_optional, _params, _session, socket) do
     if socket.assigns[:current_user] do
       {:cont, socket}
@@ -24,6 +26,7 @@ defmodule CraftplanWeb.LiveUserAuth do
   end
 
   def on_mount(:live_staff_required, _params, _session, socket) do
+    Logger.warning("fuck")
     current_user = socket.assigns[:current_user]
 
     authorized? = current_user && current_user.role in [:staff, :admin, :owner]

@@ -62,6 +62,14 @@ defmodule Craftplan.Settings.Settings do
     end
   end
 
+  preparations do
+    prepare Craftplan.Preparations.SetTenant
+  end
+
+  changes do
+    change Craftplan.Changes.SetTenant
+  end
+
   multitenancy do
     strategy :attribute
     attribute :organization_id

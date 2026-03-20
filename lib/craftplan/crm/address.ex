@@ -21,6 +21,10 @@ defmodule Craftplan.CRM.Address do
     validate present([:street, :city, :country], at_least: 1)
   end
 
+  multitenancy do
+    strategy :context
+  end
+
   attributes do
     attribute :street, :string, public?: true
     attribute :city, :string, public?: true

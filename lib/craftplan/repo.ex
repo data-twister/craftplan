@@ -21,8 +21,8 @@ defmodule Craftplan.Repo do
   Used by migrations --tenants to list all tenants, create related schemas, and migrate them.
   """
   def all_tenants do
-    for tenant <- Ash.read!(Craftplan.Accounts.Org) do
-      tenant.slug
+    for tenant <- Ash.read!(Craftplan.Accounts.Organization) do
+      tenant.prefix
     end
   end
 end

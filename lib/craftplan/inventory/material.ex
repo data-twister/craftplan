@@ -128,6 +128,10 @@ defmodule Craftplan.Inventory.Material do
     change Craftplan.Changes.SetTenant
   end
 
+  multitenancy do
+    strategy :context
+  end
+
   attributes do
     uuid_primary_key :id
 

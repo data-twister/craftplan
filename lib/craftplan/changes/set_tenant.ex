@@ -16,7 +16,7 @@ defmodule Craftplan.Changes.SetTenant do
 
   def change(changeset, _opts, %{tenant: nil, actor: actor} = _context) do
     # Ash.Changeset.set_tenant(changeset, actor.current_team)
-    Ash.Changeset.set_tenant(changeset, actor.organization)
+    Ash.Changeset.set_tenant(changeset, actor.organization.prefix)
   end
 
   def change(changeset, _opts, _context), do: changeset

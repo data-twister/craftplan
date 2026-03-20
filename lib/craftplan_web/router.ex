@@ -148,8 +148,8 @@ defmodule CraftplanWeb.Router do
         CraftplanWeb.LiveNav,
         CraftplanWeb.LiveSettings,
         CraftplanWeb.LiveCommandPalette,
-        # {CraftplanWeb.LiveUserAuth, :live_staff_required}
-        {CraftplanWeb.LiveUserAuth, :live_user_required}
+        {CraftplanWeb.LiveUserAuth, :live_staff_required}
+        # {CraftplanWeb.LiveUserAuth, :live_user_required}
         #       {CraftplanWeb.LiveUserAuth, :live_tenant_required}
       ] do
       # Products

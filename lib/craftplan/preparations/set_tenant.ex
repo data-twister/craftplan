@@ -17,6 +17,7 @@ defmodule Craftplan.Preparations.SetTenant do
   end
 
   def prepare(query, _opts, context) do
-    Ash.Query.set_tenant(query, context.actor.organization)
+    dbg(context)
+    Ash.Query.set_tenant(query, context.actor.organization.prefix)
   end
 end

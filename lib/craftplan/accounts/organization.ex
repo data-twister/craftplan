@@ -10,6 +10,8 @@ defmodule Craftplan.Accounts.Organization do
   alias Craftplan.Accounts.Membership
   alias Craftplan.Accounts.User
 
+  require Ash.Resource.Change.Builtins
+
   @doc """
   Tell Ash to use the domain as the tenant database prefix when using PostgreSQL as the database; otherwise, use the ID.
   """
@@ -21,9 +23,9 @@ defmodule Craftplan.Accounts.Organization do
       else
         id
       end
-      end
+    end
 
-      def to_tenant(%{:prefix => prefix, :id => id}, resource) do
+    def to_tenant(%{:prefix => prefix, :id => id}, resource) do
       if Info.data_layer(resource) == AshPostgres.DataLayer &&
            Info.multitenancy_strategy(resource) == :context do
         prefix
@@ -48,12 +50,23 @@ defmodule Craftplan.Accounts.Organization do
   # Resource definition...
   actions do
     defaults [:read, :destroy]
+    default_accept [:name, :plan, :owner_id, :prefix]
 
     create :create do
       primary? true
       default_accept [:name, :plan, :owner_id]
 
       change Craftplan.Accounts.User.Changes.OrgSlugify
+    end
+
+    read :by_prefix do
+      description "This action is used to read a org by its prefix"
+
+      argument :params, :string do
+        allow_nil? false
+      end
+
+      filter expr(prefix == ^arg(:params))
     end
 
     create :register_with_password do

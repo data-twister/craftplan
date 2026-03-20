@@ -284,7 +284,7 @@ defmodule Craftplan.Accounts.User do
     #    end
 
     policy always() do
-      forbid_if always()
+      authorize_if always()
     end
   end
 
@@ -294,12 +294,6 @@ defmodule Craftplan.Accounts.User do
                 :organization
               ]
             )
-  end
-
-  multitenancy do
-    strategy :attribute
-    attribute :organization_id
-    global? true
   end
 
   attributes do

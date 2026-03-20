@@ -6,6 +6,8 @@ defmodule Craftplan.Inventory.MaterialNutritionalFact do
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer]
 
+  alias Craftplan.Preparations.SetTenant
+
   postgres do
     table "inventory_material_nutritional_fact"
     repo Craftplan.Repo
@@ -32,11 +34,23 @@ defmodule Craftplan.Inventory.MaterialNutritionalFact do
   end
 
   preparations do
-    prepare Craftplan.Preparations.SetTenant
+    prepare SetTenant
+  end
+
+  preparations do
+    prepare SetTenant
   end
 
   changes do
     change Craftplan.Changes.SetTenant
+  end
+
+  changes do
+    change Craftplan.Changes.SetTenant
+  end
+
+  multitenancy do
+    strategy :context
   end
 
   attributes do
